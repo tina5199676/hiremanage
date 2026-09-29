@@ -1,4 +1,4 @@
-import axios from 'axios'
+import { http } from './http'
 
 import type {
   CreateJobInput,
@@ -14,25 +14,9 @@ import type {
 export async function getJobs(
   query: JobQuery = {},
 ): Promise<JobListResponse> {
-  const response =
-    await axios.get<JobListResponse>(
-      '/api/jobs',
-      {
-        params: query,
-      },
-    )
-
-  return response.data
-}
-
-export async function createJob(
-  payload: CreateJobInput,
-): Promise<CreateJobResponse> {
-  const response =
-    await axios.post<CreateJobResponse>(
-      '/api/jobs',
-      payload,
-    )
+  const response = await http.get<JobListResponse>('/jobs', {
+    params: query,
+  })
 
   return response.data
 }
@@ -40,10 +24,15 @@ export async function createJob(
 export async function getJobById(
   id: number,
 ): Promise<JobDetailResponse> {
-  const response =
-    await axios.get<JobDetailResponse>(
-      `/api/jobs/${id}`,
-    )
+  const response = await http.get<JobDetailResponse>(`/jobs/${id}`)
+
+  return response.data
+}
+
+export async function createJob(
+  payload: CreateJobInput,
+): Promise<CreateJobResponse> {
+  const response = await http.post<CreateJobResponse>('/jobs', payload)
 
   return response.data
 }
@@ -52,11 +41,10 @@ export async function updateJob(
   id: number,
   payload: UpdateJobInput,
 ): Promise<UpdateJobResponse> {
-  const response =
-    await axios.put<UpdateJobResponse>(
-      `/api/jobs/${id}`,
-      payload,
-    )
+  const response = await http.put<UpdateJobResponse>(
+    `/jobs/${id}`,
+    payload,
+  )
 
   return response.data
 }
@@ -64,10 +52,7 @@ export async function updateJob(
 export async function deleteJob(
   id: number,
 ): Promise<DeleteJobResponse> {
-  const response =
-    await axios.delete<DeleteJobResponse>(
-      `/api/jobs/${id}`,
-    )
+  const response = await http.delete<DeleteJobResponse>(`/jobs/${id}`)
 
   return response.data
 }

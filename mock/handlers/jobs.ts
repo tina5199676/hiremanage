@@ -1,6 +1,8 @@
 import { http, HttpResponse } from 'msw'
 
 import { jobs } from '../data/jobs'
+import { pushAuditLog } from '../data/auditLogs'
+import { requireAuth } from '../utils/auth'
 
 import type {
   CreateJobInput,
@@ -14,6 +16,12 @@ export const jobHandlers = [
   // --------------------------------------------------
 
   http.get('/api/jobs', ({ request }) => {
+    const auth = requireAuth(request, 'job.read')
+
+    if (!auth.ok) {
+      return auth.response
+    }
+
     const url = new URL(request.url)
 
     const search =
@@ -194,7 +202,13 @@ export const jobHandlers = [
 
   http.get(
     '/api/jobs/:id',
-    ({ params }) => {
+    ({ params, request }) => {
+      const auth = requireAuth(request, 'job.read')
+
+      if (!auth.ok) {
+        return auth.response
+      }
+
       const id = Number(params.id)
 
       const job = jobs.find(
@@ -228,6 +242,12 @@ export const jobHandlers = [
   http.post(
     '/api/jobs',
     async ({ request }) => {
+      const auth = requireAuth(request, 'job.create')
+
+      if (!auth.ok) {
+        return auth.response
+      }
+
       const body =
         (await request.json()) as Partial<CreateJobInput>
 
@@ -309,6 +329,14 @@ export const jobHandlers = [
 
       jobs.push(newJob)
 
+      pushAuditLog(auth.user, {
+        action: 'create',
+        targetType: 'job',
+        targetId: newJob.id,
+        targetName: newJob.title,
+        details: `建立職缺（${newJob.department}）`,
+      })
+
       return HttpResponse.json(
         {
           success: true,
@@ -328,6 +356,12 @@ export const jobHandlers = [
   http.put(
     '/api/jobs/:id',
     async ({ params, request }) => {
+      const auth = requireAuth(request, 'job.update')
+
+      if (!auth.ok) {
+        return auth.response
+      }
+
       const id = Number(params.id)
 
       const jobIndex = jobs.findIndex(
@@ -417,6 +451,17 @@ export const jobHandlers = [
 
       jobs[jobIndex] = updatedJob
 
+      pushAuditLog(auth.user, {
+        action: 'update',
+        targetType: 'job',
+        targetId: updatedJob.id,
+        targetName: updatedJob.title,
+        details:
+          existingJob.status !== updatedJob.status
+            ? `狀態由 ${existingJob.status} 改為 ${updatedJob.status}`
+            : '更新職缺資料',
+      })
+
       return HttpResponse.json({
         success: true,
         data: updatedJob,
@@ -430,7 +475,13 @@ export const jobHandlers = [
 
   http.delete(
     '/api/jobs/:id',
-    ({ params }) => {
+    ({ params, request }) => {
+      const auth = requireAuth(request, 'job.delete')
+
+      if (!auth.ok) {
+        return auth.response
+      }
+
       const id = Number(params.id)
 
       const jobIndex = jobs.findIndex(
@@ -449,7 +500,15 @@ export const jobHandlers = [
         )
       }
 
-      jobs.splice(jobIndex, 1)
+      const [removedJob] = jobs.splice(jobIndex, 1)
+
+      pushAuditLog(auth.user, {
+        action: 'delete',
+        targetType: 'job',
+        targetId: removedJob.id,
+        targetName: removedJob.title,
+        details: '刪除職缺',
+      })
 
       return HttpResponse.json({
         success: true,

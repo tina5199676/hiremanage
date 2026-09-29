@@ -14,6 +14,12 @@ export const candidates: Candidate[] = [
     skills: ['Vue 3', 'TypeScript', 'Tailwind CSS'],
     source: 'linkedin',
     status: 'active',
+    resume: {
+      summary:
+        '三年前端開發經驗，主導過企業後台系統前端架構重構，熟悉 Vue 3、TypeScript 與元件設計。',
+      fileName: 'chen-boyu-resume.pdf',
+      uploadedAt: '2026-09-01T09:00:00Z',
+    },
     createdAt: '2026-09-01T09:00:00Z',
     updatedAt: '2026-09-20T09:00:00Z',
   },

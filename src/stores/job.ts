@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
+import { getErrorMessage, getErrorStatus } from '../services/http'
 import {
   createJob as createJobRequest,
   deleteJob as deleteJobRequest,
@@ -106,10 +107,7 @@ export const useJobStore = defineStore(
         pagination.value =
           response.meta
       } catch (err) {
-        console.error(err)
-
-        error.value =
-          '無法取得職缺資料'
+        error.value = getErrorMessage(err, '無法取得職缺資料')
       } finally {
         loading.value = false
       }
@@ -133,10 +131,10 @@ export const useJobStore = defineStore(
         selectedJob.value =
           response.data
       } catch (err) {
-        console.error(err)
-
-        detailError.value =
-          '無法取得職缺詳細資料'
+        // 404 交由 View 顯示「找不到」，其他錯誤顯示錯誤訊息
+        if (getErrorStatus(err) !== 404) {
+          detailError.value = getErrorMessage(err, '無法取得職缺詳細資料')
+        }
       } finally {
         detailLoading.value = false
       }
@@ -158,10 +156,7 @@ export const useJobStore = defineStore(
 
         return response.data
       } catch (err) {
-        console.error(err)
-
-        createError.value =
-          '無法建立職缺'
+        createError.value = getErrorMessage(err, '無法建立職缺')
 
         return null
       } finally {
@@ -189,10 +184,7 @@ export const useJobStore = defineStore(
 
         return response.data
       } catch (err) {
-        console.error(err)
-
-        updateError.value =
-          '無法更新職缺'
+        updateError.value = getErrorMessage(err, '無法更新職缺')
 
         return null
       } finally {
@@ -215,10 +207,7 @@ export const useJobStore = defineStore(
 
         return true
       } catch (err) {
-        console.error(err)
-
-        deleteError.value =
-          '無法刪除職缺'
+        deleteError.value = getErrorMessage(err, '無法刪除職缺')
 
         return false
       } finally {

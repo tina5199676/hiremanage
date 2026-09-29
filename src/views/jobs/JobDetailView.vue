@@ -1,582 +1,286 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+import ConfirmDialog from '../../components/ConfirmDialog.vue'
+import EmptyState from '../../components/EmptyState.vue'
+import ErrorState from '../../components/ErrorState.vue'
+import LoadingState from '../../components/LoadingState.vue'
+import PageHeader from '../../components/PageHeader.vue'
+import StatusBadge from '../../components/StatusBadge.vue'
+import { useAuthStore } from '../../stores/auth'
 import { useJobStore } from '../../stores/job'
-
-import type {
-  JobStatus,
-  WorkType,
-} from '../../types/job'
+import { formatDateTime, formatSalaryRange } from '../../utils/formatters'
+import {
+  JOB_STATUS_LABELS,
+  JOB_STATUS_TONES,
+  WORK_TYPE_LABELS,
+} from '../../utils/labels'
 
 const route = useRoute()
 const router = useRouter()
-
 const jobStore = useJobStore()
+const authStore = useAuthStore()
 
-// --------------------------------------------------
-// Route parameter
-// --------------------------------------------------
+const jobId = computed(() => Number(route.params.id))
 
-const jobId = computed(() => {
-  return Number(route.params.id)
-})
+const isValidId = computed(
+  () => Number.isInteger(jobId.value) && jobId.value > 0,
+)
 
-// --------------------------------------------------
-// Helpers
-// --------------------------------------------------
+const job = computed(() => jobStore.selectedJob)
 
-function getStatusLabel(
-  status: JobStatus,
-) {
-  switch (status) {
-    case 'open':
-      return '開放中'
+const canUpdate = computed(() => authStore.can('job.update'))
+const canDelete = computed(() => authStore.can('job.delete'))
 
-    case 'draft':
-      return '草稿'
+const confirmOpen = ref(false)
 
-    case 'closed':
-      return '已關閉'
+async function confirmDelete() {
+  const success = await jobStore.deleteJob(jobId.value)
 
-    default:
-      return status
-  }
-}
-
-function getStatusClass(
-  status: JobStatus,
-) {
-  switch (status) {
-    case 'open':
-      return 'bg-emerald-50 text-emerald-700'
-
-    case 'draft':
-      return 'bg-amber-50 text-amber-700'
-
-    case 'closed':
-      return 'bg-slate-100 text-slate-600'
-
-    default:
-      return 'bg-slate-100 text-slate-600'
-  }
-}
-
-function getWorkTypeLabel(
-  workType: WorkType,
-) {
-  switch (workType) {
-    case 'onsite':
-      return 'On-site'
-
-    case 'remote':
-      return 'Remote'
-
-    case 'hybrid':
-      return 'Hybrid'
-
-    default:
-      return workType
-  }
-}
-
-function formatDate(
-  value: string,
-) {
-  return new Intl.DateTimeFormat(
-    'zh-TW',
-    {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    },
-  ).format(new Date(value))
-}
-
-function formatSalary(
-  min: number,
-  max: number,
-) {
-  const formatter =
-    new Intl.NumberFormat('zh-TW')
-
-  return `$${formatter.format(min)} - $${formatter.format(max)}`
-}
-
-function goBack() {
-  router.push('/admin/jobs')
-}
-
-function goToEditJob() {
-  router.push(
-    `/admin/jobs/${jobId.value}/edit`,
-  )
-}
-
-async function handleDelete() {
-  const confirmed = window.confirm(
-    '確定要刪除這筆職缺嗎？此動作無法復原。',
-  )
-
-  if (!confirmed) {
-    return
-  }
-
-  const success =
-    await jobStore.deleteJob(
-      jobId.value,
-    )
+  confirmOpen.value = false
 
   if (success) {
-    router.push('/admin/jobs')
+    router.push({ name: 'jobs' })
   }
 }
 
-// --------------------------------------------------
-// Fetch
-// --------------------------------------------------
-
-onMounted(() => {
-  if (
-    Number.isNaN(jobId.value) ||
-    jobId.value <= 0
-  ) {
-    return
+function load() {
+  if (isValidId.value) {
+    jobStore.fetchJobById(jobId.value)
   }
+}
 
-  jobStore.fetchJobById(
-    jobId.value,
-  )
-})
+onMounted(load)
 </script>
 
 <template>
-  <main class="min-h-screen bg-slate-50">
-    <!-- Header -->
-    <header
-      class="border-b border-slate-200 bg-white"
+  <div>
+    <PageHeader
+      title="職缺詳細資料"
+      :description="job?.title"
     >
-      <div
-        class="mx-auto flex max-w-5xl items-center justify-between px-6 py-5"
-      >
-        <div>
-          <button
-            type="button"
-            class="mb-3 text-sm font-medium text-slate-500 transition hover:text-slate-900"
-            @click="goBack"
-          >
-            ← 返回職缺列表
-          </button>
+      <template #actions>
+        <RouterLink
+          :to="{ name: 'jobs' }"
+          class="rounded px-2 py-2 text-sm font-medium text-slate-500 transition hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          ← 返回職缺列表
+        </RouterLink>
 
-          <h1
-            class="text-2xl font-bold text-slate-900"
-          >
-            職缺詳細資料
-          </h1>
-        </div>
+        <RouterLink
+          v-if="job && canUpdate"
+          :to="{ name: 'job-edit', params: { id: jobId } }"
+          class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+        >
+          編輯職缺
+        </RouterLink>
 
-        <div class="flex gap-3">
-          <button
-            type="button"
-            class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-            @click="goToEditJob"
-          >
-            編輯職缺
-          </button>
+        <button
+          v-if="job && canDelete"
+          type="button"
+          class="rounded-lg border border-red-300 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          :disabled="jobStore.deleteLoading"
+          @click="confirmOpen = true"
+        >
+          刪除職缺
+        </button>
+      </template>
+    </PageHeader>
 
-          <button
-            type="button"
-            class="rounded-lg border border-red-300 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
-            :disabled="jobStore.deleteLoading"
-            @click="handleDelete"
-          >
-            {{
-              jobStore.deleteLoading
-                ? '刪除中...'
-                : '刪除職缺'
-            }}
-          </button>
-        </div>
-      </div>
-    </header>
-
-    <div
-      class="mx-auto max-w-5xl px-6 py-6"
-    >
-      <!-- Delete error -->
-      <div
+    <div class="mx-auto max-w-5xl px-6 py-6">
+      <ErrorState
         v-if="jobStore.deleteError"
-        class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-      >
-        {{ jobStore.deleteError }}
-      </div>
+        class="mb-5"
+        :message="jobStore.deleteError"
+      />
 
-      <!-- Loading -->
       <section
         v-if="jobStore.detailLoading"
-        class="rounded-xl border border-slate-200 bg-white p-10 text-center shadow-sm"
+        class="rounded-xl border border-slate-200 bg-white shadow-sm"
       >
-        <p
-          class="text-sm text-slate-500"
-        >
-          載入職缺資料中...
-        </p>
+        <LoadingState message="載入職缺資料中..." />
       </section>
 
-      <!-- Error -->
-      <section
+      <ErrorState
         v-else-if="jobStore.detailError"
-        class="rounded-xl border border-red-200 bg-red-50 p-6"
-      >
-        <p
-          class="text-sm font-medium text-red-700"
-        >
-          {{ jobStore.detailError }}
-        </p>
+        :message="jobStore.detailError"
+        show-retry
+        @retry="load"
+      />
 
-        <button
-          type="button"
-          class="mt-4 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white"
-          @click="goBack"
-        >
-          返回職缺列表
-        </button>
-      </section>
-
-      <!-- Not found -->
       <section
-        v-else-if="
-          !jobStore.selectedJob
-        "
-        class="rounded-xl border border-slate-200 bg-white p-10 text-center shadow-sm"
+        v-else-if="!isValidId || !job"
+        class="rounded-xl border border-slate-200 bg-white shadow-sm"
       >
-        <p
-          class="text-sm font-medium text-slate-700"
+        <EmptyState
+          title="找不到指定的職缺"
+          description="此職缺可能已被刪除或不存在"
         >
-          找不到指定的職缺
-        </p>
-
-        <button
-          type="button"
-          class="mt-4 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white"
-          @click="goBack"
-        >
-          返回職缺列表
-        </button>
+          <RouterLink
+            :to="{ name: 'jobs' }"
+            class="inline-block rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+          >
+            返回職缺列表
+          </RouterLink>
+        </EmptyState>
       </section>
 
-      <!-- Detail -->
-      <template
-        v-else
-      >
-        <!-- Main information -->
+      <template v-else>
         <section
           class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+          aria-labelledby="job-overview-title"
         >
-          <div
-            class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
-          >
-            <div>
-              <div
-                class="flex flex-wrap items-center gap-3"
-              >
-                <h2
-                  class="text-2xl font-bold text-slate-900"
-                >
-                  {{
-                    jobStore
-                      .selectedJob
-                      .title
-                  }}
-                </h2>
+          <div class="flex flex-wrap items-center gap-3">
+            <h2
+              id="job-overview-title"
+              class="text-2xl font-bold text-slate-900"
+            >
+              {{ job.title }}
+            </h2>
 
-                <span
-                  class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium"
-                  :class="
-                    getStatusClass(
-                      jobStore
-                        .selectedJob
-                        .status,
-                    )
-                  "
-                >
-                  {{
-                    getStatusLabel(
-                      jobStore
-                        .selectedJob
-                        .status,
-                    )
-                  }}
-                </span>
-              </div>
-
-              <p
-                class="mt-2 text-sm text-slate-500"
-              >
-                {{
-                  jobStore
-                    .selectedJob
-                    .department
-                }}
-                ・
-                {{
-                  jobStore
-                    .selectedJob
-                    .location
-                }}
-              </p>
-            </div>
+            <StatusBadge
+              :label="JOB_STATUS_LABELS[job.status]"
+              :tone="JOB_STATUS_TONES[job.status]"
+            />
           </div>
 
-          <div
-            class="mt-6 border-t border-slate-200 pt-6"
-          >
-            <h3
-              class="text-sm font-semibold text-slate-900"
-            >
+          <p class="mt-2 text-sm text-slate-500">
+            {{ job.department }} ・ {{ job.location }}
+          </p>
+
+          <div class="mt-6 border-t border-slate-200 pt-6">
+            <h3 class="text-sm font-semibold text-slate-900">
               職缺描述
             </h3>
 
-            <p
-              class="mt-2 whitespace-pre-line text-sm leading-7 text-slate-600"
-            >
-              {{
-                jobStore
-                  .selectedJob
-                  .description
-              }}
+            <p class="mt-2 whitespace-pre-line text-sm leading-7 text-slate-600">
+              {{ job.description }}
             </p>
           </div>
         </section>
 
-        <!-- Job information -->
         <section
           class="mt-5 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+          aria-labelledby="job-info-title"
         >
           <h3
+            id="job-info-title"
             class="text-base font-semibold text-slate-900"
           >
             職缺資訊
           </h3>
 
-          <dl
-            class="mt-5 grid gap-6 sm:grid-cols-2"
-          >
+          <dl class="mt-5 grid gap-6 sm:grid-cols-2">
             <div>
-              <dt
-                class="text-xs font-medium text-slate-500"
-              >
-                部門
-              </dt>
-
-              <dd
-                class="mt-1 text-sm font-medium text-slate-900"
-              >
-                {{
-                  jobStore
-                    .selectedJob
-                    .department
-                }}
+              <dt class="text-xs font-medium text-slate-500">部門</dt>
+              <dd class="mt-1 text-sm font-medium text-slate-900">
+                {{ job.department }}
               </dd>
             </div>
 
             <div>
-              <dt
-                class="text-xs font-medium text-slate-500"
-              >
-                工作地點
-              </dt>
-
-              <dd
-                class="mt-1 text-sm font-medium text-slate-900"
-              >
-                {{
-                  jobStore
-                    .selectedJob
-                    .location
-                }}
+              <dt class="text-xs font-medium text-slate-500">工作地點</dt>
+              <dd class="mt-1 text-sm font-medium text-slate-900">
+                {{ job.location }}
               </dd>
             </div>
 
             <div>
-              <dt
-                class="text-xs font-medium text-slate-500"
-              >
-                工作型態
-              </dt>
-
-              <dd
-                class="mt-1 text-sm font-medium text-slate-900"
-              >
-                {{
-                  getWorkTypeLabel(
-                    jobStore
-                      .selectedJob
-                      .workType,
-                  )
-                }}
+              <dt class="text-xs font-medium text-slate-500">工作型態</dt>
+              <dd class="mt-1 text-sm font-medium text-slate-900">
+                {{ WORK_TYPE_LABELS[job.workType] }}
               </dd>
             </div>
 
             <div>
-              <dt
-                class="text-xs font-medium text-slate-500"
-              >
-                薪資範圍
-              </dt>
-
-              <dd
-                class="mt-1 text-sm font-medium text-slate-900"
-              >
-                {{
-                  formatSalary(
-                    jobStore
-                      .selectedJob
-                      .salaryMin,
-                    jobStore
-                      .selectedJob
-                      .salaryMax,
-                  )
-                }}
+              <dt class="text-xs font-medium text-slate-500">薪資範圍</dt>
+              <dd class="mt-1 text-sm font-medium text-slate-900">
+                {{ formatSalaryRange(job.salaryMin, job.salaryMax) }}
               </dd>
             </div>
 
             <div>
-              <dt
-                class="text-xs font-medium text-slate-500"
-              >
-                經驗要求
-              </dt>
-
-              <dd
-                class="mt-1 text-sm font-medium text-slate-900"
-              >
-                {{
-                  jobStore
-                    .selectedJob
-                    .experience
-                }}
+              <dt class="text-xs font-medium text-slate-500">經驗要求</dt>
+              <dd class="mt-1 text-sm font-medium text-slate-900">
+                {{ job.experience }}
               </dd>
             </div>
 
             <div>
-              <dt
-                class="text-xs font-medium text-slate-500"
-              >
-                學歷要求
-              </dt>
-
-              <dd
-                class="mt-1 text-sm font-medium text-slate-900"
-              >
-                {{
-                  jobStore
-                    .selectedJob
-                    .education
-                }}
+              <dt class="text-xs font-medium text-slate-500">學歷要求</dt>
+              <dd class="mt-1 text-sm font-medium text-slate-900">
+                {{ job.education }}
               </dd>
             </div>
           </dl>
         </section>
 
-        <!-- Skills -->
         <section
           class="mt-5 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+          aria-labelledby="job-skills-title"
         >
           <h3
+            id="job-skills-title"
             class="text-base font-semibold text-slate-900"
           >
             必要技能
           </h3>
 
-          <div
-            class="mt-4 flex flex-wrap gap-2"
-          >
-            <span
-              v-for="skill in jobStore.selectedJob.requiredSkills"
+          <ul class="mt-4 flex flex-wrap gap-2">
+            <li
+              v-for="skill in job.requiredSkills"
               :key="skill"
               class="rounded-full bg-slate-100 px-3 py-1.5 text-sm text-slate-700"
             >
               {{ skill }}
-            </span>
-          </div>
+            </li>
+          </ul>
         </section>
 
-        <!-- Metadata -->
         <section
           class="mt-5 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+          aria-labelledby="job-meta-title"
         >
           <h3
+            id="job-meta-title"
             class="text-base font-semibold text-slate-900"
           >
             系統資訊
           </h3>
 
-          <dl
-            class="mt-5 grid gap-6 sm:grid-cols-2"
-          >
+          <dl class="mt-5 grid gap-6 sm:grid-cols-3">
             <div>
-              <dt
-                class="text-xs font-medium text-slate-500"
-              >
-                Job ID
-              </dt>
+              <dt class="text-xs font-medium text-slate-500">Job ID</dt>
+              <dd class="mt-1 text-sm text-slate-700">{{ job.id }}</dd>
+            </div>
 
-              <dd
-                class="mt-1 text-sm text-slate-700"
-              >
-                {{
-                  jobStore
-                    .selectedJob
-                    .id
-                }}
+            <div>
+              <dt class="text-xs font-medium text-slate-500">建立時間</dt>
+              <dd class="mt-1 text-sm text-slate-700">
+                {{ formatDateTime(job.createdAt) }}
               </dd>
             </div>
 
             <div>
-              <dt
-                class="text-xs font-medium text-slate-500"
-              >
-                建立時間
-              </dt>
-
-              <dd
-                class="mt-1 text-sm text-slate-700"
-              >
-                {{
-                  formatDate(
-                    jobStore
-                      .selectedJob
-                      .createdAt,
-                  )
-                }}
-              </dd>
-            </div>
-
-            <div>
-              <dt
-                class="text-xs font-medium text-slate-500"
-              >
-                更新時間
-              </dt>
-
-              <dd
-                class="mt-1 text-sm text-slate-700"
-              >
-                {{
-                  formatDate(
-                    jobStore
-                      .selectedJob
-                      .updatedAt,
-                  )
-                }}
+              <dt class="text-xs font-medium text-slate-500">更新時間</dt>
+              <dd class="mt-1 text-sm text-slate-700">
+                {{ formatDateTime(job.updatedAt) }}
               </dd>
             </div>
           </dl>
         </section>
       </template>
     </div>
-  </main>
+
+    <ConfirmDialog
+      :open="confirmOpen"
+      title="刪除職缺"
+      :message="`確定要刪除職缺「${job?.title ?? ''}」嗎？此動作無法復原。`"
+      confirm-label="刪除"
+      :loading="jobStore.deleteLoading"
+      @confirm="confirmDelete"
+      @cancel="confirmOpen = false"
+    />
+  </div>
 </template>
