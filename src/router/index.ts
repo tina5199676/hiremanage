@@ -110,6 +110,29 @@ const router = createRouter({
             import('../views/candidates/CandidateEditView.vue'),
           meta: { permission: 'candidate.update', title: '編輯候選人' },
         },
+
+        // Applications
+        {
+          path: 'applications',
+          name: 'applications',
+          component: () =>
+            import('../views/applications/ApplicationsView.vue'),
+          meta: { permission: 'application.read', title: '應徵管理' },
+        },
+        {
+          path: 'applications/create',
+          name: 'application-create',
+          component: () =>
+            import('../views/applications/ApplicationCreateView.vue'),
+          meta: { permission: 'application.create', title: '建立應徵' },
+        },
+        {
+          path: 'applications/:id',
+          name: 'application-detail',
+          component: () =>
+            import('../views/applications/ApplicationDetailView.vue'),
+          meta: { permission: 'application.read', title: '應徵詳細' },
+        },
       ],
     },
 
