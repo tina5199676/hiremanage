@@ -90,11 +90,25 @@ const router = createRouter({
           meta: { permission: 'candidate.read', title: '候選人' },
         },
         {
+          path: 'candidates/create',
+          name: 'candidate-create',
+          component: () =>
+            import('../views/candidates/CandidateCreateView.vue'),
+          meta: { permission: 'candidate.create', title: '新增候選人' },
+        },
+        {
           path: 'candidates/:id',
           name: 'candidate-detail',
           component: () =>
             import('../views/candidates/CandidateDetailView.vue'),
           meta: { permission: 'candidate.read', title: '候選人詳細' },
+        },
+        {
+          path: 'candidates/:id/edit',
+          name: 'candidate-edit',
+          component: () =>
+            import('../views/candidates/CandidateEditView.vue'),
+          meta: { permission: 'candidate.update', title: '編輯候選人' },
         },
       ],
     },

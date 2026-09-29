@@ -1,7 +1,24 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+
+import AppPagination from '../../components/AppPagination.vue'
+import ConfirmDialog from '../../components/ConfirmDialog.vue'
+import EmptyState from '../../components/EmptyState.vue'
+import ErrorState from '../../components/ErrorState.vue'
+import LoadingState from '../../components/LoadingState.vue'
+import PageHeader from '../../components/PageHeader.vue'
+import SortButton from '../../components/SortButton.vue'
+import StatusBadge from '../../components/StatusBadge.vue'
+import { useAuthStore } from '../../stores/auth'
 import { useCandidateStore } from '../../stores/candidate'
+import { formatDate } from '../../utils/formatters'
+import {
+  CANDIDATE_SOURCE_LABELS,
+  CANDIDATE_STATUS_LABELS,
+  CANDIDATE_STATUS_TONES,
+  toOptions,
+} from '../../utils/labels'
 
 import type {
   Candidate,
@@ -11,160 +28,58 @@ import type {
   SortOrder,
 } from '../../types/candidate'
 
-const candidateStore = useCandidateStore()
 const router = useRouter()
+const candidateStore = useCandidateStore()
+const authStore = useAuthStore()
 
-function viewCandidate(candidate: Candidate) {
-  router.push(
-    `/admin/candidates/${candidate.id}`,
-  )
-}
+const canCreate = computed(() => authStore.can('candidate.create'))
+const canUpdate = computed(() => authStore.can('candidate.update'))
+const canDelete = computed(() => authStore.can('candidate.delete'))
+
+const statusOptions = toOptions(CANDIDATE_STATUS_LABELS, '全部狀態')
+const sourceOptions = toOptions(CANDIDATE_SOURCE_LABELS, '全部來源')
+const pageSizeOptions = [5, 10, 20]
 
 // --------------------------------------------------
-// Search
+// Search / filter
 // --------------------------------------------------
 
 const searchInput = ref('')
 
-// --------------------------------------------------
-// Filter options
-// --------------------------------------------------
-
-const statusOptions: Array<{
-  label: string
-  value: CandidateStatus
-}> = [
-  {
-    label: '全部狀態',
-    value: '' as CandidateStatus,
-  },
-  {
-    label: '在職應徵中',
-    value: 'active',
-  },
-  {
-    label: '未在聯繫',
-    value: 'inactive',
-  },
-  {
-    label: '已錄取',
-    value: 'hired',
-  },
-]
-
-const sourceOptions: Array<{
-  label: string
-  value: CandidateSource
-}> = [
-  {
-    label: '全部來源',
-    value: '' as CandidateSource,
-  },
-  {
-    label: 'Referral',
-    value: 'referral',
-  },
-  {
-    label: 'LinkedIn',
-    value: 'linkedin',
-  },
-  {
-    label: 'Job Board',
-    value: 'job-board',
-  },
-  {
-    label: 'Career Site',
-    value: 'career-site',
-  },
-  {
-    label: 'Other',
-    value: 'other',
-  },
-]
-
-// --------------------------------------------------
-// Pagination
-// --------------------------------------------------
-
-const pageSizeOptions = [5, 10, 20]
-
-const currentPage = computed(() => {
-  return candidateStore.pagination.page
-})
-
-const pageSize = computed(() => {
-  return candidateStore.pagination.pageSize
-})
-
-const totalItems = computed(() => {
-  return candidateStore.pagination.total
-})
-
-const totalPages = computed(() => {
-  return candidateStore.pagination.totalPages
-})
-
-// --------------------------------------------------
-// Sort
-// --------------------------------------------------
-
-const currentSortBy = computed<CandidateSortBy>(() => {
-  return candidateStore.query.sortBy ?? 'createdAt'
-})
-
-const currentSortOrder = computed<SortOrder>(() => {
-  return candidateStore.query.sortOrder ?? 'desc'
-})
-
-// --------------------------------------------------
-// Search / Filter
-// --------------------------------------------------
-
 function applyFilters() {
   candidateStore.setQuery({
-    search:
-      searchInput.value.trim() || undefined,
-
+    search: searchInput.value.trim() || undefined,
     page: 1,
   })
 
   candidateStore.fetchCandidates()
 }
 
-function handleStatusChange(
-  event: Event,
-) {
-  const target =
-    event.target as HTMLSelectElement
-
-  const value = target.value
+function handleStatusChange(event: Event) {
+  const value = (event.target as HTMLSelectElement).value
 
   candidateStore.setQuery({
-    status:
-      value
-        ? (value as CandidateStatus)
-        : undefined,
-
+    status: value ? (value as CandidateStatus) : undefined,
     page: 1,
   })
 
   candidateStore.fetchCandidates()
 }
 
-function handleSourceChange(
-  event: Event,
-) {
-  const target =
-    event.target as HTMLSelectElement
-
-  const value = target.value
+function handleSourceChange(event: Event) {
+  const value = (event.target as HTMLSelectElement).value
 
   candidateStore.setQuery({
-    source:
-      value
-        ? (value as CandidateSource)
-        : undefined,
+    source: value ? (value as CandidateSource) : undefined,
+    page: 1,
+  })
 
+  candidateStore.fetchCandidates()
+}
+
+function handlePageSizeChange(event: Event) {
+  candidateStore.setQuery({
+    pageSize: Number((event.target as HTMLSelectElement).value),
     page: 1,
   })
 
@@ -173,9 +88,7 @@ function handleSourceChange(
 
 function clearFilters() {
   searchInput.value = ''
-
   candidateStore.resetQuery()
-
   candidateStore.fetchCandidates()
 }
 
@@ -183,31 +96,31 @@ function clearFilters() {
 // Sort
 // --------------------------------------------------
 
-function toggleSort(
-  sortBy: CandidateSortBy,
-) {
-  const currentSortBy =
-    candidateStore.query.sortBy
+const currentSortBy = computed<CandidateSortBy>(
+  () => candidateStore.query.sortBy ?? 'createdAt',
+)
 
-  const currentSortOrder =
-    candidateStore.query.sortOrder
+const currentSortOrder = computed<SortOrder>(
+  () => candidateStore.query.sortOrder ?? 'desc',
+)
 
+function toggleSort(sortBy: CandidateSortBy) {
   let nextSortOrder: SortOrder = 'asc'
 
-  if (currentSortBy === sortBy) {
-    nextSortOrder =
-      currentSortOrder === 'asc'
-        ? 'desc'
-        : 'asc'
+  if (currentSortBy.value === sortBy) {
+    nextSortOrder = currentSortOrder.value === 'asc' ? 'desc' : 'asc'
   }
 
-  candidateStore.setQuery({
-    sortBy,
-    sortOrder: nextSortOrder,
-    page: 1,
-  })
-
+  candidateStore.setQuery({ sortBy, sortOrder: nextSortOrder, page: 1 })
   candidateStore.fetchCandidates()
+}
+
+function ariaSort(key: CandidateSortBy) {
+  if (currentSortBy.value !== key) {
+    return 'none'
+  }
+
+  return currentSortOrder.value === 'asc' ? 'ascending' : 'descending'
 }
 
 // --------------------------------------------------
@@ -215,210 +128,88 @@ function toggleSort(
 // --------------------------------------------------
 
 function goToPage(page: number) {
-  if (
-    page < 1 ||
-    page > totalPages.value ||
-    page === currentPage.value
-  ) {
+  candidateStore.setQuery({ page })
+  candidateStore.fetchCandidates()
+}
+
+// --------------------------------------------------
+// Delete
+// --------------------------------------------------
+
+const candidateToDelete = ref<Candidate | null>(null)
+
+async function confirmDelete() {
+  if (!candidateToDelete.value) {
     return
   }
 
-  candidateStore.setQuery({
-    page,
-  })
-
-  candidateStore.fetchCandidates()
-}
-
-function handlePageSizeChange(
-  event: Event,
-) {
-  const target =
-    event.target as HTMLSelectElement
-
-  const newPageSize =
-    Number(target.value)
-
-  candidateStore.setQuery({
-    pageSize: newPageSize,
-    page: 1,
-  })
-
-  candidateStore.fetchCandidates()
-}
-
-// --------------------------------------------------
-// Pagination page numbers
-// --------------------------------------------------
-
-const visiblePages = computed(() => {
-  const pages: number[] = []
-
-  const total = totalPages.value
-  const current = currentPage.value
-
-  if (total <= 7) {
-    for (let page = 1; page <= total; page += 1) {
-      pages.push(page)
-    }
-
-    return pages
-  }
-
-  pages.push(1)
-
-  if (current > 4) {
-    pages.push(-1)
-  }
-
-  const start = Math.max(2, current - 1)
-  const end = Math.min(
-    total - 1,
-    current + 1,
+  const success = await candidateStore.deleteCandidate(
+    candidateToDelete.value.id,
   )
 
-  for (
-    let page = start;
-    page <= end;
-    page += 1
-  ) {
-    pages.push(page)
+  candidateToDelete.value = null
+
+  if (success) {
+    if (
+      candidateStore.candidates.length === 1 &&
+      (candidateStore.query.page ?? 1) > 1
+    ) {
+      candidateStore.setQuery({ page: (candidateStore.query.page ?? 1) - 1 })
+    }
+
+    candidateStore.fetchCandidates()
   }
-
-  if (current < total - 3) {
-    pages.push(-1)
-  }
-
-  pages.push(total)
-
-  return pages
-})
-
-// --------------------------------------------------
-// Helpers
-// --------------------------------------------------
-
-function getStatusLabel(
-  status: CandidateStatus,
-) {
-  switch (status) {
-    case 'active':
-      return '在職應徵中'
-
-    case 'inactive':
-      return '未在聯繫'
-
-    case 'hired':
-      return '已錄取'
-
-    default:
-      return status
-  }
-}
-
-function getStatusClass(
-  status: CandidateStatus,
-) {
-  switch (status) {
-    case 'active':
-      return 'bg-emerald-50 text-emerald-700'
-
-    case 'inactive':
-      return 'bg-slate-100 text-slate-600'
-
-    case 'hired':
-      return 'bg-blue-50 text-blue-700'
-
-    default:
-      return 'bg-slate-100 text-slate-600'
-  }
-}
-
-function formatDate(
-  value: string,
-) {
-  return new Intl.DateTimeFormat(
-    'zh-TW',
-    {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    },
-  ).format(new Date(value))
-}
-
-function getSortIcon(
-  sortBy: CandidateSortBy,
-) {
-  if (currentSortBy.value !== sortBy) {
-    return '↕'
-  }
-
-  return currentSortOrder.value === 'asc'
-    ? '↑'
-    : '↓'
-}
-
-function getSortButtonLabel(
-  sortBy: CandidateSortBy,
-) {
-  if (currentSortBy.value !== sortBy) {
-    return '點擊排序'
-  }
-
-  return currentSortOrder.value === 'asc'
-    ? '目前為升冪排序，點擊切換為降冪'
-    : '目前為降冪排序，點擊切換為升冪'
 }
 
 // --------------------------------------------------
-// Initial fetch
+// Navigation
 // --------------------------------------------------
+
+function viewCandidate(candidate: Candidate) {
+  router.push({ name: 'candidate-detail', params: { id: candidate.id } })
+}
+
+function editCandidate(candidate: Candidate) {
+  router.push({ name: 'candidate-edit', params: { id: candidate.id } })
+}
 
 onMounted(() => {
+  searchInput.value = candidateStore.query.search ?? ''
   candidateStore.fetchCandidates()
 })
 </script>
 
 <template>
-  <main class="min-h-screen bg-slate-50">
-    <!-- Page header -->
-    <header
-      class="border-b border-slate-200 bg-white"
+  <div>
+    <PageHeader
+      title="候選人"
+      description="管理所有候選人的基本資料與狀態"
     >
-      <div
-        class="mx-auto flex max-w-7xl items-center justify-between px-6 py-5"
-      >
-        <div>
-          <h1
-            class="text-2xl font-bold text-slate-900"
-          >
-            候選人管理
-          </h1>
+      <template #actions>
+        <RouterLink
+          v-if="canCreate"
+          :to="{ name: 'candidate-create' }"
+          class="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+        >
+          ＋ 新增候選人
+        </RouterLink>
+      </template>
+    </PageHeader>
 
-          <p
-            class="mt-1 text-sm text-slate-500"
-          >
-            管理企業目前的候選人資料
-          </p>
-        </div>
-      </div>
-    </header>
-
-    <div
-      class="mx-auto max-w-7xl px-6 py-6"
-    >
-      <!-- Search / Filters -->
+    <div class="mx-auto max-w-7xl px-6 py-6">
       <section
+        aria-labelledby="candidate-filter-title"
         class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
       >
-        <div
-          class="grid gap-4 lg:grid-cols-4"
+        <h2
+          id="candidate-filter-title"
+          class="sr-only"
         >
-          <!-- Search -->
-          <div
-            class="lg:col-span-2"
-          >
+          搜尋與篩選
+        </h2>
+
+        <div class="grid gap-4 lg:grid-cols-4">
+          <div class="lg:col-span-2">
             <label
               for="candidate-search"
               class="mb-2 block text-sm font-medium text-slate-700"
@@ -426,14 +217,12 @@ onMounted(() => {
               搜尋候選人
             </label>
 
-            <div
-              class="flex gap-2"
-            >
+            <div class="flex gap-2">
               <input
                 id="candidate-search"
                 v-model="searchInput"
                 type="search"
-                placeholder="搜尋姓名或 Email..."
+                placeholder="搜尋姓名、Email 或技能..."
                 class="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 @keyup.enter="applyFilters"
               />
@@ -448,7 +237,6 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- Status -->
           <div>
             <label
               for="candidate-status"
@@ -465,7 +253,7 @@ onMounted(() => {
             >
               <option
                 v-for="option in statusOptions"
-                :key="option.label"
+                :key="option.value"
                 :value="option.value"
               >
                 {{ option.label }}
@@ -473,7 +261,6 @@ onMounted(() => {
             </select>
           </div>
 
-          <!-- Source -->
           <div>
             <label
               for="candidate-source"
@@ -490,7 +277,7 @@ onMounted(() => {
             >
               <option
                 v-for="option in sourceOptions"
-                :key="option.label"
+                :key="option.value"
                 :value="option.value"
               >
                 {{ option.label }}
@@ -498,7 +285,6 @@ onMounted(() => {
             </select>
           </div>
 
-          <!-- Page size -->
           <div>
             <label
               for="candidate-page-size"
@@ -509,7 +295,7 @@ onMounted(() => {
 
             <select
               id="candidate-page-size"
-              :value="pageSize"
+              :value="candidateStore.pagination.pageSize"
               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               @change="handlePageSizeChange"
             >
@@ -523,13 +309,10 @@ onMounted(() => {
             </select>
           </div>
 
-          <!-- Clear -->
-          <div
-            class="flex items-end"
-          >
+          <div class="flex items-end">
             <button
               type="button"
-              class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+              class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
               @click="clearFilters"
             >
               清除篩選
@@ -538,86 +321,74 @@ onMounted(() => {
         </div>
       </section>
 
-      <!-- Result summary -->
       <div
         class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
       >
         <p
           class="text-sm text-slate-600"
+          aria-live="polite"
         >
           共
-          <span
-            class="font-semibold text-slate-900"
-          >
-            {{ totalItems }}
+          <span class="font-semibold text-slate-900">
+            {{ candidateStore.pagination.total }}
           </span>
           位候選人
         </p>
 
         <p
-          v-if="totalPages > 0"
+          v-if="candidateStore.pagination.totalPages > 0"
           class="text-sm text-slate-500"
         >
-          第 {{ currentPage }} /
-          {{ totalPages }} 頁
+          第 {{ candidateStore.pagination.page }} /
+          {{ candidateStore.pagination.totalPages }} 頁
         </p>
       </div>
 
-      <!-- Error -->
-      <div
+      <ErrorState
         v-if="candidateStore.error"
-        class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-      >
-        {{ candidateStore.error }}
-      </div>
+        class="mt-4"
+        :message="candidateStore.error"
+        show-retry
+        @retry="candidateStore.fetchCandidates()"
+      />
 
-      <!-- Table -->
+      <ErrorState
+        v-if="candidateStore.deleteError"
+        class="mt-4"
+        :message="candidateStore.deleteError"
+      />
+
       <section
         class="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
       >
-        <div
-          class="overflow-x-auto"
-        >
-          <table
-            class="min-w-full divide-y divide-slate-200"
-          >
-            <thead
-              class="bg-slate-50"
-            >
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-slate-200">
+            <caption class="sr-only">
+              候選人列表
+            </caption>
+
+            <thead class="bg-slate-50">
               <tr>
-                <!-- Name -->
+                <th
+                  scope="col"
+                  class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
+                  :aria-sort="ariaSort('name')"
+                >
+                  <SortButton
+                    label="姓名"
+                    :active="currentSortBy === 'name'"
+                    :order="currentSortOrder"
+                    @toggle="toggleSort('name')"
+                  />
+                </th>
+
                 <th
                   scope="col"
                   class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
                 >
-                  <button
-                    type="button"
-                    class="inline-flex items-center gap-1 rounded px-1 py-1 text-left transition hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
-                    :aria-label="
-                      getSortButtonLabel('name')
-                    "
-                    @click="toggleSort('name')"
-                  >
-                    姓名
-
-                    <span
-                      aria-hidden="true"
-                      class="text-sm"
-                    >
-                      {{ getSortIcon('name') }}
-                    </span>
-                  </button>
+                  目前職務
                 </th>
 
-                <!-- Current title -->
-                <th
-                  scope="col"
-                  class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
-                >
-                  目前職稱
-                </th>
-
-                <!-- Location -->
                 <th
                   scope="col"
                   class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
@@ -625,7 +396,6 @@ onMounted(() => {
                   地點
                 </th>
 
-                <!-- Source -->
                 <th
                   scope="col"
                   class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
@@ -633,7 +403,6 @@ onMounted(() => {
                   來源
                 </th>
 
-                <!-- Status -->
                 <th
                   scope="col"
                   class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
@@ -641,41 +410,19 @@ onMounted(() => {
                   狀態
                 </th>
 
-                <!-- Created at -->
                 <th
                   scope="col"
                   class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
+                  :aria-sort="ariaSort('createdAt')"
                 >
-                  <button
-                    type="button"
-                    class="inline-flex items-center gap-1 rounded px-1 py-1 text-left transition hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
-                    :aria-label="
-                      getSortButtonLabel(
-                        'createdAt',
-                      )
-                    "
-                    @click="
-                      toggleSort(
-                        'createdAt',
-                      )
-                    "
-                  >
-                    建立時間
-
-                    <span
-                      aria-hidden="true"
-                      class="text-sm"
-                    >
-                      {{
-                        getSortIcon(
-                          'createdAt',
-                        )
-                      }}
-                    </span>
-                  </button>
+                  <SortButton
+                    label="建立時間"
+                    :active="currentSortBy === 'createdAt'"
+                    :order="currentSortOrder"
+                    @toggle="toggleSort('createdAt')"
+                  />
                 </th>
 
-                <!-- Actions -->
                 <th
                   scope="col"
                   class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500"
@@ -685,144 +432,98 @@ onMounted(() => {
               </tr>
             </thead>
 
-            <tbody
-              class="divide-y divide-slate-200 bg-white"
-            >
-              <!-- Loading -->
-              <tr
-                v-if="candidateStore.loading"
-              >
-                <td
-                  colspan="7"
-                  class="px-5 py-12 text-center text-sm text-slate-500"
-                >
-                  載入中...
+            <tbody class="divide-y divide-slate-200 bg-white">
+              <tr v-if="candidateStore.loading">
+                <td colspan="7">
+                  <LoadingState />
                 </td>
               </tr>
 
-              <!-- Empty -->
-              <tr
-                v-else-if="
-                  candidateStore.candidates.length === 0
-                "
-              >
-                <td
-                  colspan="7"
-                  class="px-5 py-12 text-center"
-                >
-                  <p
-                    class="text-sm font-medium text-slate-700"
-                  >
-                    找不到符合條件的候選人
-                  </p>
-
-                  <p
-                    class="mt-1 text-sm text-slate-500"
-                  >
-                    請調整搜尋條件或篩選條件
-                  </p>
+              <tr v-else-if="candidateStore.candidates.length === 0">
+                <td colspan="7">
+                  <EmptyState
+                    title="找不到符合條件的候選人"
+                    description="請調整搜尋條件或篩選條件"
+                  />
                 </td>
               </tr>
 
-              <!-- Data -->
               <tr
                 v-for="candidate in candidateStore.candidates"
                 v-else
                 :key="candidate.id"
                 class="transition hover:bg-slate-50"
               >
-                <!-- Name -->
-                <td
-                  class="whitespace-nowrap px-5 py-4"
-                >
-                  <div>
-                    <p
-                      class="font-medium text-slate-900"
-                    >
-                      {{ candidate.name }}
-                    </p>
+                <td class="px-5 py-4">
+                  <RouterLink
+                    :to="{ name: 'candidate-detail', params: { id: candidate.id } }"
+                    class="rounded font-medium text-slate-900 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {{ candidate.name }}
+                  </RouterLink>
 
-                    <p
-                      class="mt-1 max-w-xs truncate text-xs text-slate-500"
-                    >
-                      {{ candidate.email }}
-                    </p>
-                  </div>
+                  <p class="mt-1 text-xs text-slate-500">
+                    {{ candidate.email }}
+                  </p>
                 </td>
 
-                <!-- Current title -->
-                <td
-                  class="whitespace-nowrap px-5 py-4 text-sm text-slate-700"
-                >
-                  <p>
-                    {{ candidate.currentTitle }}
-                  </p>
+                <td class="px-5 py-4 text-sm text-slate-700">
+                  <p>{{ candidate.currentTitle }}</p>
 
-                  <p
-                    class="mt-1 text-xs text-slate-500"
-                  >
+                  <p class="mt-1 text-xs text-slate-500">
                     {{ candidate.currentCompany }}
                   </p>
                 </td>
 
-                <!-- Location -->
-                <td
-                  class="whitespace-nowrap px-5 py-4 text-sm text-slate-700"
-                >
+                <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-700">
                   {{ candidate.location }}
                 </td>
 
-                <!-- Source -->
-                <td
-                  class="whitespace-nowrap px-5 py-4 text-sm text-slate-700"
-                >
-                  {{ candidate.source }}
+                <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-700">
+                  {{ CANDIDATE_SOURCE_LABELS[candidate.source] }}
                 </td>
 
-                <!-- Status -->
-                <td
-                  class="whitespace-nowrap px-5 py-4"
-                >
-                  <span
-                    class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium"
-                    :class="
-                      getStatusClass(
-                        candidate.status,
-                      )
-                    "
-                  >
-                    {{
-                      getStatusLabel(
-                        candidate.status,
-                      )
-                    }}
-                  </span>
+                <td class="whitespace-nowrap px-5 py-4">
+                  <StatusBadge
+                    :label="CANDIDATE_STATUS_LABELS[candidate.status]"
+                    :tone="CANDIDATE_STATUS_TONES[candidate.status]"
+                  />
                 </td>
 
-                <!-- Created -->
-                <td
-                  class="whitespace-nowrap px-5 py-4 text-sm text-slate-600"
-                >
-                  {{
-                    formatDate(
-                      candidate.createdAt,
-                    )
-                  }}
+                <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-600">
+                  {{ formatDate(candidate.createdAt) }}
                 </td>
 
-                <!-- Actions -->
-                <td
-                  class="whitespace-nowrap px-5 py-4 text-right"
-                >
-                  <div
-                    class="flex justify-end gap-2"
-                  >
+                <td class="whitespace-nowrap px-5 py-4 text-right">
+                  <div class="flex justify-end gap-2">
                     <button
                       type="button"
                       class="rounded-md px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400"
                       @click="viewCandidate(candidate)"
                     >
                       查看
+                      <span class="sr-only">{{ candidate.name }}</span>
+                    </button>
+
+                    <button
+                      v-if="canUpdate"
+                      type="button"
+                      class="rounded-md px-3 py-1.5 text-xs font-medium text-blue-600 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      @click="editCandidate(candidate)"
+                    >
+                      編輯
+                      <span class="sr-only">{{ candidate.name }}</span>
+                    </button>
+
+                    <button
+                      v-if="canDelete"
+                      type="button"
+                      class="rounded-md px-3 py-1.5 text-xs font-medium text-red-600 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+                      :disabled="candidateStore.deleteLoading"
+                      @click="candidateToDelete = candidate"
+                    >
+                      刪除
+                      <span class="sr-only">{{ candidate.name }}</span>
                     </button>
                   </div>
                 </td>
@@ -831,120 +532,26 @@ onMounted(() => {
           </table>
         </div>
 
-        <!-- Pagination -->
-        <div
-          v-if="
-            !candidateStore.loading &&
-            totalPages > 0
-          "
-          class="flex flex-col gap-4 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
-        >
-          <!-- Result info -->
-          <p
-            class="text-sm text-slate-500"
-          >
-            顯示
-            <span
-              class="font-medium text-slate-700"
-            >
-              {{
-                (currentPage - 1) *
-                  pageSize +
-                1
-              }}
-            </span>
-            -
-            <span
-              class="font-medium text-slate-700"
-            >
-              {{
-                Math.min(
-                  currentPage *
-                    pageSize,
-                  totalItems,
-                )
-              }}
-            </span>
-            筆，共
-            <span
-              class="font-medium text-slate-700"
-            >
-              {{ totalItems }}
-            </span>
-            筆
-          </p>
-
-          <!-- Page controls -->
-          <nav
-            aria-label="候選人列表分頁"
-            class="flex items-center gap-1"
-          >
-            <!-- Previous -->
-            <button
-              type="button"
-              class="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-              :disabled="currentPage === 1"
-              @click="
-                goToPage(
-                  currentPage - 1,
-                )
-              "
-            >
-              上一頁
-            </button>
-
-            <!-- Pages -->
-            <template
-              v-for="(
-                page, index
-              ) in visiblePages"
-              :key="`${page}-${index}`"
-            >
-              <span
-                v-if="page === -1"
-                class="px-2 text-sm text-slate-400"
-              >
-                …
-              </span>
-
-              <button
-                v-else
-                type="button"
-                class="min-w-9 rounded-md border px-3 py-2 text-sm font-medium transition"
-                :class="
-                  page === currentPage
-                    ? 'border-slate-900 bg-slate-900 text-white'
-                    : 'border-slate-300 text-slate-700 hover:bg-slate-50'
-                "
-                :aria-current="
-                  page === currentPage
-                    ? 'page'
-                    : undefined
-                "
-                @click="goToPage(page)"
-              >
-                {{ page }}
-              </button>
-            </template>
-
-            <!-- Next -->
-            <button
-              type="button"
-              class="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-              :disabled="
-                currentPage === totalPages
-              "
-              @click="
-                goToPage(
-                  currentPage + 1,
-                )
-              "
-            >
-              下一頁
-            </button>
-          </nav>
-        </div>
+        <AppPagination
+          v-if="!candidateStore.loading && candidateStore.pagination.totalPages > 0"
+          :page="candidateStore.pagination.page"
+          :page-size="candidateStore.pagination.pageSize"
+          :total="candidateStore.pagination.total"
+          :total-pages="candidateStore.pagination.totalPages"
+          aria-label="候選人列表分頁"
+          @update:page="goToPage"
+        />
       </section>
     </div>
-  </main>
+
+    <ConfirmDialog
+      :open="candidateToDelete !== null"
+      title="刪除候選人"
+      :message="`確定要刪除候選人「${candidateToDelete?.name ?? ''}」嗎？此動作無法復原。`"
+      confirm-label="刪除"
+      :loading="candidateStore.deleteLoading"
+      @confirm="confirmDelete"
+      @cancel="candidateToDelete = null"
+    />
+  </div>
 </template>
