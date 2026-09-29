@@ -7,6 +7,7 @@ import {
   deleteCandidate as deleteCandidateRequest,
   deleteCandidateNote,
   getCandidateById,
+  getCandidateHistory,
   getCandidateNotes,
   getCandidates,
   updateCandidate as updateCandidateRequest,
@@ -15,6 +16,7 @@ import { getErrorMessage, getErrorStatus } from '../services/http'
 
 import type {
   Candidate,
+  CandidateHistory,
   CandidateNote,
   CandidatePaginationMeta,
   CandidateQuery,
@@ -80,6 +82,14 @@ export const useCandidateStore = defineStore('candidate', () => {
   const notesLoading = ref(false)
   const notesError = ref<string | null>(null)
   const noteSubmitting = ref(false)
+
+  // --------------------------------------------------
+  // History state
+  // --------------------------------------------------
+
+  const history = ref<CandidateHistory | null>(null)
+  const historyLoading = ref(false)
+  const historyError = ref<string | null>(null)
 
   // --------------------------------------------------
   // Actions: list / detail
@@ -245,6 +255,26 @@ export const useCandidateStore = defineStore('candidate', () => {
   }
 
   // --------------------------------------------------
+  // Actions: history
+  // --------------------------------------------------
+
+  async function fetchHistory(candidateId: number) {
+    historyLoading.value = true
+    historyError.value = null
+    history.value = null
+
+    try {
+      const response = await getCandidateHistory(candidateId)
+
+      history.value = response.data
+    } catch (err) {
+      historyError.value = getErrorMessage(err, '無法取得候選人紀錄')
+    } finally {
+      historyLoading.value = false
+    }
+  }
+
+  // --------------------------------------------------
   // Query
   // --------------------------------------------------
 
@@ -290,6 +320,12 @@ export const useCandidateStore = defineStore('candidate', () => {
     fetchNotes,
     addNote,
     removeNote,
+
+    // History
+    history,
+    historyLoading,
+    historyError,
+    fetchHistory,
 
     // Query
     setQuery,

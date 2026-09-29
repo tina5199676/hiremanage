@@ -5,7 +5,13 @@ import {
   candidateNotes,
   nextCandidateNoteId,
 } from '../data/candidateNotes'
+import {
+  applications,
+  resolveApplication,
+} from '../data/applications'
 import { candidates } from '../data/candidates'
+import { interviews, resolveInterview } from '../data/interviews'
+import { offers, resolveOffer } from '../data/offers'
 import { requireAuth } from '../utils/auth'
 
 import type {
@@ -627,4 +633,48 @@ export const candidateHandlers = [
       })
     },
   ),
+  // --------------------------------------------------
+  // GET /api/candidates/:id/history
+  // --------------------------------------------------
+
+  http.get('/api/candidates/:id/history', ({ params, request }) => {
+    const auth = requireAuth(request, 'candidate.read')
+
+    if (!auth.ok) {
+      return auth.response
+    }
+
+    const id = Number(params.id)
+
+    if (!candidates.some((item) => item.id === id)) {
+      return HttpResponse.json(
+        {
+          success: false,
+          message: '找不到指定候選人',
+        },
+        { status: 404 },
+      )
+    }
+
+    const byNewest = (a: { updatedAt: string }, b: { updatedAt: string }) =>
+      new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+
+    return HttpResponse.json({
+      success: true,
+      data: {
+        applications: applications
+          .filter((item) => item.candidateId === id)
+          .map(resolveApplication)
+          .sort(byNewest),
+        interviews: interviews
+          .filter((item) => item.candidateId === id)
+          .map(resolveInterview)
+          .sort(byNewest),
+        offers: offers
+          .filter((item) => item.candidateId === id)
+          .map(resolveOffer)
+          .sort(byNewest),
+      },
+    })
+  }),
 ]

@@ -2,6 +2,7 @@ import { http } from './http'
 
 import type {
   CandidateDetailResponse,
+  CandidateHistoryResponse,
   CandidateListResponse,
   CandidateNoteListResponse,
   CandidateQuery,
@@ -100,6 +101,20 @@ export async function deleteCandidateNote(
 ): Promise<DeleteCandidateNoteResponse> {
   const response = await http.delete<DeleteCandidateNoteResponse>(
     `/candidates/${candidateId}/notes/${noteId}`,
+  )
+
+  return response.data
+}
+
+// --------------------------------------------------
+// History
+// --------------------------------------------------
+
+export async function getCandidateHistory(
+  candidateId: number,
+): Promise<CandidateHistoryResponse> {
+  const response = await http.get<CandidateHistoryResponse>(
+    `/candidates/${candidateId}/history`,
   )
 
   return response.data

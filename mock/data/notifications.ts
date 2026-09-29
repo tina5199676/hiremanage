@@ -36,7 +36,7 @@ export const notifications: Notification[] = [
     userId: 2,
     type: 'offer_accepted',
     title: 'Offer 已接受',
-    message: '黃俊傑已接受 Product Manager 的 Offer。',
+    message: '楊子萱已接受 Product Manager 的 Offer。',
     link: '/admin/offers',
     read: false,
     createdAt: '2026-09-27T08:45:00Z',

@@ -1,3 +1,7 @@
+import type { Application } from './application'
+import type { Interview } from './interview'
+import type { Offer } from './offer'
+
 export type CandidateStatus =
   | 'active'
   | 'inactive'
@@ -136,4 +140,20 @@ export interface CreateCandidateNoteResponse {
 export interface DeleteCandidateNoteResponse {
   success: boolean
   message?: string
+}
+
+// --------------------------------------------------
+// History (應徵 / 面試 / Offer 紀錄)
+// --------------------------------------------------
+
+
+export interface CandidateHistory {
+  applications: Application[]
+  interviews: Interview[]
+  offers: Offer[]
+}
+
+export interface CandidateHistoryResponse {
+  success: boolean
+  data: CandidateHistory
 }
