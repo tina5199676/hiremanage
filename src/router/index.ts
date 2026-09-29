@@ -133,6 +133,23 @@ const router = createRouter({
             import('../views/applications/ApplicationDetailView.vue'),
           meta: { permission: 'application.read', title: '應徵詳細' },
         },
+
+        // Notifications
+        {
+          path: 'notifications',
+          name: 'notifications',
+          component: () =>
+            import('../views/notifications/NotificationsView.vue'),
+          meta: { permission: 'notification.read', title: '通知' },
+        },
+
+        // Audit logs
+        {
+          path: 'audit-logs',
+          name: 'audit-logs',
+          component: () => import('../views/audit-logs/AuditLogsView.vue'),
+          meta: { permission: 'audit.read', title: '稽核紀錄' },
+        },
       ],
     },
 

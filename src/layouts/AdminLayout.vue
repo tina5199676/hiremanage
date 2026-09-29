@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { useAuthStore } from '../stores/auth'
@@ -46,18 +46,7 @@ const navItems: NavItem[] = [
     permission: 'application.read',
     match: '/admin/applications',
   },
-  {
-    label: '面試管理',
-    to: '/admin/interviews',
-    permission: 'interview.read',
-    match: '/admin/interviews',
-  },
-  {
-    label: 'Offer 管理',
-    to: '/admin/offers',
-    permission: 'offer.read',
-    match: '/admin/offers',
-  },
+  // 第二期：面試管理、Offer 管理（Mock API 已完成，頁面待實作）
   {
     label: '通知',
     to: '/admin/notifications',
@@ -105,10 +94,18 @@ const unreadCount = computed(() => notificationStore.unreadCount)
 
 const loggingOut = ref(false)
 
+onMounted(() => {
+  if (authStore.can('notification.read')) {
+    notificationStore.fetchUnreadCount()
+  }
+})
+
 async function handleLogout() {
   loggingOut.value = true
 
   await authStore.logout()
+
+  notificationStore.reset()
 
   loggingOut.value = false
 
