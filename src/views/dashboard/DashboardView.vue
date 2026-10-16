@@ -53,7 +53,7 @@ const statTiles = computed(() => {
       label: '排定面試',
       value: stats.scheduledInterviews,
       hint: `本週 ${stats.interviewsThisWeek} 場`,
-      to: null,
+      to: '/admin/interviews',
       permission: 'interview.read' as const,
     },
     {

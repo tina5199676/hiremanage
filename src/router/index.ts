@@ -134,6 +134,35 @@ const router = createRouter({
           meta: { permission: 'application.read', title: '應徵詳細' },
         },
 
+        // Interviews
+        {
+          path: 'interviews',
+          name: 'interviews',
+          component: () => import('../views/interviews/InterviewsView.vue'),
+          meta: { permission: 'interview.read', title: '面試管理' },
+        },
+        {
+          path: 'interviews/create',
+          name: 'interview-create',
+          component: () =>
+            import('../views/interviews/InterviewCreateView.vue'),
+          meta: { permission: 'interview.create', title: '安排面試' },
+        },
+        {
+          path: 'interviews/:id',
+          name: 'interview-detail',
+          component: () =>
+            import('../views/interviews/InterviewDetailView.vue'),
+          meta: { permission: 'interview.read', title: '面試詳細' },
+        },
+        {
+          path: 'interviews/:id/edit',
+          name: 'interview-edit',
+          component: () =>
+            import('../views/interviews/InterviewEditView.vue'),
+          meta: { permission: 'interview.update', title: '編輯面試' },
+        },
+
         // Notifications
         {
           path: 'notifications',

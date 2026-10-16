@@ -7,9 +7,11 @@ import { interviewHandlers } from './interviews'
 import { jobHandlers } from './jobs'
 import { notificationHandlers } from './notifications'
 import { offerHandlers } from './offers'
+import { userHandlers } from './users'
 
 export const handlers = [
   ...authHandlers,
+  ...userHandlers,
   ...dashboardHandlers,
   ...jobHandlers,
   ...candidateHandlers,

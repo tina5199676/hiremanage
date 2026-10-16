@@ -46,7 +46,12 @@ const navItems: NavItem[] = [
     permission: 'application.read',
     match: '/admin/applications',
   },
-  // 第二期：面試管理、Offer 管理（Mock API 已完成，頁面待實作）
+  {
+    label: '面試管理',
+    to: '/admin/interviews',
+    permission: 'interview.read',
+    match: '/admin/interviews',
+  },
   {
     label: '通知',
     to: '/admin/notifications',

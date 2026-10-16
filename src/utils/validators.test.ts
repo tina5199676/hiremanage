@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 import {
   validateApplicationForm,
   validateCandidateForm,
+  validateFeedbackForm,
+  validateInterviewForm,
   validateJobForm,
   validateLoginForm,
   validateNoteContent,
@@ -161,5 +163,54 @@ describe('validateOfferForm', () => {
     expect(validateOfferForm({ ...valid, salary: '0' }).salary).toBe(
       '請輸入有效的薪資',
     )
+  })
+})
+
+describe('validateInterviewForm', () => {
+  const valid = {
+    applicationId: '1',
+    interviewerId: '3',
+    stage: 'technical' as const,
+    date: '2026-10-20',
+    time: '10:00',
+    durationMinutes: '60',
+    mode: 'onsite' as const,
+    meetingLink: '',
+    location: '台北辦公室',
+    notes: '',
+    status: 'scheduled' as const,
+  }
+
+  it('有效表單沒有錯誤', () => {
+    expect(validateInterviewForm(valid)).toEqual({})
+  })
+
+  it('現場面試未填地點時回傳錯誤', () => {
+    const errors = validateInterviewForm({ ...valid, location: '' })
+
+    expect(errors.location).toBe('現場面試請輸入地點')
+  })
+
+  it('時長超出範圍時回傳錯誤', () => {
+    expect(
+      validateInterviewForm({ ...valid, durationMinutes: '10' }).durationMinutes,
+    ).toBeDefined()
+    expect(
+      validateInterviewForm({ ...valid, durationMinutes: '600' }).durationMinutes,
+    ).toBeDefined()
+  })
+})
+
+describe('validateFeedbackForm', () => {
+  it('評分不在 1 - 5 之間時回傳錯誤', () => {
+    expect(
+      validateFeedbackForm({ score: '6', feedback: 'ok', notes: '' }).score,
+    ).toBe('請給予 1 至 5 分的評分')
+  })
+
+  it('有效表單沒有錯誤', () => {
+    expect(
+      validateFeedbackForm({ score: '4', feedback: '表現良好', notes: '' }),
+    ).toEqual({})
   })
 })

@@ -435,8 +435,13 @@ onMounted(load)
                   >
                     <div>
                       <p class="text-sm font-medium text-slate-900">
-                        {{ INTERVIEW_STAGE_LABELS[interview.stage] }} ・
-                        {{ interview.jobTitle }}
+                        <RouterLink
+                          :to="{ name: 'interview-detail', params: { id: interview.id } }"
+                          class="rounded hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          {{ INTERVIEW_STAGE_LABELS[interview.stage] }} ・
+                          {{ interview.jobTitle }}
+                        </RouterLink>
                       </p>
 
                       <p class="mt-0.5 text-xs text-slate-500">

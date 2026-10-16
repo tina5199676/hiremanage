@@ -35,6 +35,9 @@ const application = computed(() => applicationStore.selectedApplication)
 
 const canUpdate = computed(() => authStore.can('application.update'))
 const canDelete = computed(() => authStore.can('application.delete'))
+const canScheduleInterview = computed(() =>
+  authStore.can('interview.create'),
+)
 
 const statusOptions = APPLICATION_STATUS_ORDER.map((status) => ({
   value: status,
@@ -134,6 +137,14 @@ onMounted(load)
           class="rounded px-2 py-2 text-sm font-medium text-slate-500 transition hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           ← 返回應徵管理
+        </RouterLink>
+
+        <RouterLink
+          v-if="application && canScheduleInterview"
+          :to="{ name: 'interview-create', query: { applicationId: application.id } }"
+          class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+        >
+          安排面試
         </RouterLink>
 
         <button

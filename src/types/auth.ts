@@ -66,3 +66,8 @@ export interface LogoutResponse {
   success: boolean
   message?: string
 }
+
+export interface UserListResponse {
+  success: boolean
+  data: User[]
+}
