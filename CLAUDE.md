@@ -464,7 +464,7 @@ Mock API 必須模擬真實後端行為。
 * Application Kanban Drag & Drop
 * User / Permission Management 頁面（`user.read` 權限已定義但未使用）
 * 履歷上傳
-* candidate / application / notification / auditLog / dashboard store 的單元測試
+* notification / auditLog / dashboard store 的單元測試
 * Performance 專項檢查（bundle 分析、大量資料渲染）
 
 ---
@@ -548,7 +548,7 @@ npm run test:watch  # 監看模式
   store / service 測試走完整的 request → mock API 流程
 * 每個測試後會 reset handlers 與 localStorage
 
-目前覆蓋：utility、http、auth / job / interview / offer store、
+目前覆蓋：utility、http、auth / job / candidate / application / interview / offer store、
 StatusBadge / AppPagination / JobForm / InterviewForm / OfferForm。
 
 新增 store 或 form component 時，應一併補上對應測試。
