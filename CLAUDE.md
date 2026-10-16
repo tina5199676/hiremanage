@@ -48,13 +48,10 @@ HireManage 是一個企業級智慧面試管理平台練習專案。
 * Mock Data
 * Form Validation（utils/validators.ts）
 * Vitest（Unit Test）
-* Playwright（E2E Test）
+* Playwright（E2E Test + axe 無障礙掃描）
 * ESLint
-
-預計後續加入：
-
-* Docker
-* GitHub Actions
+* Docker（多階段建置，nginx 提供 SPA）
+* GitHub Actions（typecheck / lint / unit / build / e2e / docker build）
 
 ---
 
@@ -462,12 +459,13 @@ Mock API 必須模擬真實後端行為。
 
 * `GET /api/users`：供表單選擇面試官，任何已登入使用者皆可讀取
 
-尚未完成：
+尚未完成（刻意延後，目前以可交付為優先）：
 
 * Application Kanban Drag & Drop
-* Docker
-* GitHub Actions
-* Accessibility / Performance 專項檢查
+* User / Permission Management 頁面（`user.read` 權限已定義但未使用）
+* 履歷上傳
+* candidate / application / notification / auditLog / dashboard store 的單元測試
+* Performance 專項檢查（bundle 分析、大量資料渲染）
 
 ---
 
@@ -568,8 +566,11 @@ npm run test:e2e:ui
 * 共用登入流程放在 `e2e/helpers.ts`
 * 因 tsconfig.node.json 使用 `module: nodenext`，e2e 內相對 import 需帶 `.ts` 副檔名
 
-目前覆蓋：登入 / 登出 / 403 守衛，以及
-Login → Job List → Create Job → Job Detail、Delete Job 確認流程。
+目前覆蓋：登入 / 登出 / 403 守衛，
+Login → Job List → Create Job → Job Detail、Delete Job 確認流程，
+以及 `e2e/a11y.spec.ts` 以 @axe-core/playwright 掃描主要頁面（WCAG 2.1 A / AA）。
+
+新增頁面時請加入 `e2e/a11y.spec.ts` 的 PAGES 清單。
 
 ### 開發流程
 
@@ -580,6 +581,21 @@ npm run typecheck
 npm run lint
 npm test
 ```
+
+push 後 GitHub Actions（`.github/workflows/ci.yml`）會再跑一次完整流程，
+包含 E2E 與 Docker build。
+
+### Docker
+
+```text
+docker compose up --build
+# 或
+docker build -t hiremanage .
+docker run -p 8080:80 hiremanage
+```
+
+容器以 nginx 提供靜態檔案，`docker/nginx.conf` 負責 SPA fallback。
+建置時預設 `VITE_ENABLE_MOCK=true`，讓容器在沒有後端的情況下仍可完整展示。
 
 ---
 

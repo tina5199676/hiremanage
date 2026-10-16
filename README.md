@@ -92,9 +92,6 @@ Mock Data
 ### Development
 
 * ESLint
-
-預計加入：
-
 * Docker
 * GitHub Actions
 
@@ -418,9 +415,18 @@ Mock 帳號（密碼皆為虛構）：
 npm run typecheck   # vue-tsc
 npm run lint        # ESLint
 npm test            # Vitest 單元測試
-npm run test:e2e    # Playwright E2E 測試
+npm run test:e2e    # Playwright E2E 測試（含 axe 無障礙掃描）
 npm run build       # 正式建置
 ```
+
+Docker：
+
+```bash
+docker compose up --build
+# 開啟 http://localhost:8080
+```
+
+CI：push 到 master 或建立 PR 時，GitHub Actions 會執行 typecheck、lint、單元測試、build、E2E 與 Docker build。
 
 ---
 
@@ -465,10 +471,10 @@ Phase 13 ✅ Offer Management
 Phase 14 ✅ Form Validation
 Phase 15 ✅ Unit Test
 Phase 16 ✅ E2E Test
-Phase 17 ⬜ Accessibility
+Phase 17 ✅ Accessibility（axe 自動掃描）
 Phase 18 ⬜ Performance
-Phase 19 ⬜ Docker
-Phase 20 ⬜ CI/CD
+Phase 19 ✅ Docker
+Phase 20 ✅ CI/CD
 ```
 
 ---
