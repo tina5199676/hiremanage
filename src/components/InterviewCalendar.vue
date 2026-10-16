@@ -83,7 +83,7 @@ function itemsFor(key: string): Interview[] {
             <span
               class="inline-flex h-6 w-6 items-center justify-center rounded-full text-xs"
               :class="[
-                cell.inMonth ? 'text-slate-700' : 'text-slate-400',
+                cell.inMonth ? 'text-slate-700' : 'text-slate-500',
                 cell.key === todayKey ? 'bg-slate-900 font-semibold text-white' : '',
               ]"
             >
