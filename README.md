@@ -86,16 +86,15 @@ Mock Data
 
 ### Testing
 
-預計使用：
-
-* Vitest
-* Playwright
+* Vitest（Unit Test）
+* Playwright（E2E Test）
 
 ### Development
 
-預計使用：
-
 * ESLint
+
+預計加入：
+
 * Docker
 * GitHub Actions
 
@@ -144,7 +143,7 @@ Mock Data
 
 ### Dashboard
 
-預計提供：
+已實作：
 
 * Open Jobs
 * Candidates
@@ -159,7 +158,7 @@ Mock Data
 
 ### Job Management
 
-目前已實作：
+已實作：
 
 * Job List
 * Search
@@ -167,9 +166,6 @@ Mock Data
 * Sort
 * Pagination
 * Job Detail
-
-預計加入：
-
 * Create Job
 * Edit Job
 * Delete Job
@@ -193,7 +189,7 @@ Job 包含：
 
 ### Candidate Management
 
-預計提供：
+已實作：
 
 * Candidate List
 * Candidate Detail
@@ -228,13 +224,15 @@ Hired
 Rejected
 ```
 
-預計使用 Kanban 管理 Application。
+已實作 Kanban、列表、詳細頁、建立與狀態變更。
+
+Drag & Drop 為未來項目。
 
 ---
 
 ### Interview Management
 
-預計提供：
+已實作：
 
 * Interview Calendar
 * Create Interview
@@ -260,7 +258,7 @@ Interview 資訊包含：
 
 ### Offer Management
 
-預計提供：
+已實作：
 
 * Create Offer
 * Edit Offer
@@ -280,7 +278,7 @@ Rejected
 
 ### Notification
 
-預計提供：
+已實作：
 
 * Interview Scheduled
 * Application Updated
@@ -291,7 +289,7 @@ Rejected
 
 ### Audit Log
 
-預計記錄：
+已實作，記錄：
 
 * Actor
 * Action
@@ -397,6 +395,35 @@ offer.create
 
 ---
 
+## Getting Started
+
+```bash
+npm install
+npm run dev
+```
+
+開發模式會自動啟動 MSW，所有 API 皆由 Mock 回應。
+
+Mock 帳號（密碼皆為虛構）：
+
+| 帳號 | 密碼 | 角色 |
+| --- | --- | --- |
+| admin | <redacted> | System Admin |
+| hr | <redacted> | HR / Recruiter |
+| manager | <redacted> | Hiring Manager |
+
+常用指令：
+
+```bash
+npm run typecheck   # vue-tsc
+npm run lint        # ESLint
+npm test            # Vitest 單元測試
+npm run test:e2e    # Playwright E2E 測試
+npm run build       # 正式建置
+```
+
+---
+
 ## Development Philosophy
 
 HireManage 不追求一次加入所有技術。
@@ -422,65 +449,26 @@ HireManage 不追求一次加入所有技術。
 ## Future Roadmap
 
 ```text
-Phase 1
-Vue 3 + TypeScript
-
-Phase 2
-Project Architecture
-
-Phase 3
-TypeScript Deep Dive
-
-Phase 4
-Mock API + Mock Data
-
-Phase 5
-Authentication
-
-Phase 6
-Authorization
-
-Phase 7
-Server State
-
-Phase 8
-Dashboard
-
-Phase 9
-Job Management
-
-Phase 10
-Candidate Management
-
-Phase 11
-Application Kanban
-
-Phase 12
-Interview Calendar
-
-Phase 13
-Offer Management
-
-Phase 14
-Form Validation
-
-Phase 15
-Unit Test
-
-Phase 16
-E2E Test
-
-Phase 17
-Accessibility
-
-Phase 18
-Performance
-
-Phase 19
-Docker
-
-Phase 20
-CI/CD
+Phase 1  ✅ Vue 3 + TypeScript
+Phase 2  ✅ Project Architecture
+Phase 3  ✅ TypeScript Deep Dive
+Phase 4  ✅ Mock API + Mock Data
+Phase 5  ✅ Authentication
+Phase 6  ✅ Authorization
+Phase 7  ✅ Server State
+Phase 8  ✅ Dashboard
+Phase 9  ✅ Job Management
+Phase 10 ✅ Candidate Management
+Phase 11 ✅ Application Kanban
+Phase 12 ✅ Interview Calendar
+Phase 13 ✅ Offer Management
+Phase 14 ✅ Form Validation
+Phase 15 ✅ Unit Test
+Phase 16 ✅ E2E Test
+Phase 17 ⬜ Accessibility
+Phase 18 ⬜ Performance
+Phase 19 ⬜ Docker
+Phase 20 ⬜ CI/CD
 ```
 
 ---

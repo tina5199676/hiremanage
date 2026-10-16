@@ -46,13 +46,13 @@ HireManage 是一個企業級智慧面試管理平台練習專案。
 * Axios
 * MSW
 * Mock Data
+* Form Validation（utils/validators.ts）
+* Vitest（Unit Test）
+* Playwright（E2E Test）
+* ESLint
 
 預計後續加入：
 
-* Vitest
-* Playwright
-* ESLint
-* Form Validation
 * Docker
 * GitHub Actions
 
@@ -446,20 +446,28 @@ Mock API 必須模擬真實後端行為。
 
 ## 12. Existing Features
 
-目前 Job Management 已經包含：
+目前已完成的模組（皆含 Types → Mock Data → Mock API → Service → Store → Router → View → Validation）：
 
-* Job List
-* Search
-* Filter
-* Sort
-* Pagination
-* Job Detail
+* Auth：登入、登出、Token 還原、Permission-based 導覽與路由守衛
+* Dashboard：統計卡片、應徵趨勢、招聘漏斗、最近應徵
+* Job：List（Search / Filter / Sort / Pagination）、Detail、Create、Edit、Delete
+* Candidate：List、Detail、Create、Edit、Delete、Notes、Application / Interview / Offer History
+* Application：List、Kanban、Detail、Create、Change Status、Note、Delete
+* Interview：Calendar / List、Detail、Create、Edit、Delete、Feedback
+* Offer：List、Detail、Create、Edit、Delete、Status Workflow（draft → sent → accepted / rejected）
+* Notification：List、Unread Count、Mark as Read
+* Audit Log：List、Filter
 
-目前正在逐步加入：
+輔助 Mock API：
 
-* Create Job
-* Edit Job
-* Delete Job
+* `GET /api/users`：供表單選擇面試官，任何已登入使用者皆可讀取
+
+尚未完成：
+
+* Application Kanban Drag & Drop
+* Docker
+* GitHub Actions
+* Accessibility / Performance 專項檢查
 
 ---
 
@@ -528,43 +536,49 @@ Loading...
 
 ## 16. Testing
 
-未來加入：
-
 ### Unit Test
 
-使用：
+使用 Vitest + @vue/test-utils + jsdom。
 
 ```text
-Vitest
+npm test            # 單次執行
+npm run test:watch  # 監看模式
 ```
 
-測試：
+* 測試檔與原始碼放在一起：`*.test.ts`
+* `src/test/setup.ts` 以 MSW node server 載入與瀏覽器相同的 handlers，
+  store / service 測試走完整的 request → mock API 流程
+* 每個測試後會 reset handlers 與 localStorage
 
-* utility
-* store
-* service
-* component
+目前覆蓋：utility、http、auth / job / interview / offer store、
+StatusBadge / AppPagination / JobForm / InterviewForm / OfferForm。
+
+新增 store 或 form component 時，應一併補上對應測試。
 
 ### E2E Test
 
-使用：
+使用 Playwright（`e2e/` 目錄，Chromium）。
 
 ```text
-Playwright
+npm run test:e2e
+npm run test:e2e:ui
 ```
 
-測試完整使用者流程。
+* `playwright.config.ts` 會自動啟動 `vite --port 4173`
+* 共用登入流程放在 `e2e/helpers.ts`
+* 因 tsconfig.node.json 使用 `module: nodenext`，e2e 內相對 import 需帶 `.ts` 副檔名
 
-例如：
+目前覆蓋：登入 / 登出 / 403 守衛，以及
+Login → Job List → Create Job → Job Detail、Delete Job 確認流程。
+
+### 開發流程
+
+修改程式後，commit 前至少執行：
 
 ```text
-Login
-↓
-Job List
-↓
-Create Job
-↓
-Job Detail
+npm run typecheck
+npm run lint
+npm test
 ```
 
 ---
