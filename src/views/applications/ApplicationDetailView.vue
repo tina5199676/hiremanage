@@ -38,6 +38,7 @@ const canDelete = computed(() => authStore.can('application.delete'))
 const canScheduleInterview = computed(() =>
   authStore.can('interview.create'),
 )
+const canCreateOffer = computed(() => authStore.can('offer.create'))
 
 const statusOptions = APPLICATION_STATUS_ORDER.map((status) => ({
   value: status,
@@ -145,6 +146,14 @@ onMounted(load)
           class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
         >
           安排面試
+        </RouterLink>
+
+        <RouterLink
+          v-if="application && canCreateOffer && application.status !== 'rejected'"
+          :to="{ name: 'offer-create', query: { applicationId: application.id } }"
+          class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+        >
+          建立 Offer
         </RouterLink>
 
         <button

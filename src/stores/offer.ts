@@ -5,12 +5,14 @@ import { getErrorMessage, getErrorStatus } from '../services/http'
 import {
   createOffer as createOfferRequest,
   deleteOffer as deleteOfferRequest,
+  getApplicationOptions,
   getOfferById,
   getOffers,
   updateOffer as updateOfferRequest,
   updateOfferStatus,
 } from '../services/offerService'
 
+import type { Application } from '../types/application'
 import type { PaginationMeta } from '../types/common'
 import type {
   CreateOfferInput,
@@ -71,6 +73,16 @@ export const useOfferStore = defineStore('offer', () => {
   const deleteError = ref<string | null>(null)
 
   const statusUpdating = ref(false)
+
+  // --------------------------------------------------
+  // Form options state
+  // --------------------------------------------------
+
+  const applicationOptions = ref<Application[]>([])
+
+  const optionsLoading = ref(false)
+
+  const optionsError = ref<string | null>(null)
 
   // --------------------------------------------------
   // Actions: list / detail
@@ -206,6 +218,25 @@ export const useOfferStore = defineStore('offer', () => {
   }
 
   // --------------------------------------------------
+  // Actions: form options
+  // --------------------------------------------------
+
+  async function fetchApplicationOptions() {
+    optionsLoading.value = true
+    optionsError.value = null
+
+    try {
+      const response = await getApplicationOptions()
+
+      applicationOptions.value = response.data
+    } catch (err) {
+      optionsError.value = getErrorMessage(err, '無法取得應徵紀錄選項')
+    } finally {
+      optionsLoading.value = false
+    }
+  }
+
+  // --------------------------------------------------
   // Query
   // --------------------------------------------------
 
@@ -244,6 +275,12 @@ export const useOfferStore = defineStore('offer', () => {
     deleteLoading,
     deleteError,
     deleteOffer,
+
+    // Options
+    applicationOptions,
+    optionsLoading,
+    optionsError,
+    fetchApplicationOptions,
 
     // Query
     setQuery,

@@ -60,7 +60,7 @@ const statTiles = computed(() => {
       label: 'Offer',
       value: stats.offers,
       hint: `${stats.pendingOffers} 份等待回覆`,
-      to: null,
+      to: '/admin/offers',
       permission: 'offer.read' as const,
     },
   ].filter((tile) => authStore.can(tile.permission))

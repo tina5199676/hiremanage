@@ -485,7 +485,12 @@ onMounted(load)
                   >
                     <div>
                       <p class="text-sm font-medium text-slate-900">
-                        {{ offer.jobTitle }}
+                        <RouterLink
+                          :to="{ name: 'offer-detail', params: { id: offer.id } }"
+                          class="rounded hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          {{ offer.jobTitle }}
+                        </RouterLink>
                       </p>
 
                       <p class="mt-0.5 text-xs text-slate-500">

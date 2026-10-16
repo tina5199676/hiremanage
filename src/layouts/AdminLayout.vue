@@ -53,6 +53,12 @@ const navItems: NavItem[] = [
     match: '/admin/interviews',
   },
   {
+    label: 'Offer 管理',
+    to: '/admin/offers',
+    permission: 'offer.read',
+    match: '/admin/offers',
+  },
+  {
     label: '通知',
     to: '/admin/notifications',
     permission: 'notification.read',

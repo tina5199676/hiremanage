@@ -163,6 +163,32 @@ const router = createRouter({
           meta: { permission: 'interview.update', title: '編輯面試' },
         },
 
+        // Offers
+        {
+          path: 'offers',
+          name: 'offers',
+          component: () => import('../views/offers/OffersView.vue'),
+          meta: { permission: 'offer.read', title: 'Offer 管理' },
+        },
+        {
+          path: 'offers/create',
+          name: 'offer-create',
+          component: () => import('../views/offers/OfferCreateView.vue'),
+          meta: { permission: 'offer.create', title: '建立 Offer' },
+        },
+        {
+          path: 'offers/:id',
+          name: 'offer-detail',
+          component: () => import('../views/offers/OfferDetailView.vue'),
+          meta: { permission: 'offer.read', title: 'Offer 詳細' },
+        },
+        {
+          path: 'offers/:id/edit',
+          name: 'offer-edit',
+          component: () => import('../views/offers/OfferEditView.vue'),
+          meta: { permission: 'offer.update', title: '編輯 Offer' },
+        },
+
         // Notifications
         {
           path: 'notifications',
