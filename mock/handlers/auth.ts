@@ -31,6 +31,7 @@ export const authHandlers = [
     const record = users.find(
       (user) =>
         user.username === body.username &&
+        user.password !== null &&
         user.password === body.password,
     )
 

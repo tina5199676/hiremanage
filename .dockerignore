@@ -9,3 +9,6 @@ e2e
 docs
 *.log
 .DS_Store
+.env
+.env.*
+!.env.example

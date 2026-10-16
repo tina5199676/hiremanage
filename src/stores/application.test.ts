@@ -1,7 +1,8 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { useAuthStore } from './auth'
+import { loginAs } from '../test/auth'
+
 import { useApplicationStore } from './application'
 import { APPLICATION_STATUS_ORDER } from '../utils/labels'
 
@@ -13,12 +14,6 @@ const newApplication: CreateApplicationInput = {
   jobId: 1,
   status: 'applied',
   note: '單元測試建立',
-}
-
-async function loginAs(username: string, password: string) {
-  const authStore = useAuthStore()
-
-  await authStore.login({ username, password })
 }
 
 describe('application store', () => {
@@ -40,7 +35,7 @@ describe('application store', () => {
   })
 
   it('fetchApplications 依 query 回傳分頁資料並可依狀態篩選', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useApplicationStore()
 
@@ -63,7 +58,7 @@ describe('application store', () => {
   })
 
   it('fetchBoard 依狀態分組，且每欄的卡片狀態正確', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useApplicationStore()
 
@@ -86,7 +81,7 @@ describe('application store', () => {
   })
 
   it('fetchApplicationById 找不到時 selectedApplication 為 null 且不視為錯誤', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useApplicationStore()
 
@@ -101,7 +96,7 @@ describe('application store', () => {
   // --------------------------------------------------
 
   it('createApplication → updateApplication → deleteApplication 完整流程', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useApplicationStore()
 
@@ -139,7 +134,7 @@ describe('application store', () => {
   })
 
   it('updateStatus 會樂觀移動看板卡片，成功後同步 selectedApplication', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useApplicationStore()
 
@@ -169,7 +164,7 @@ describe('application store', () => {
   })
 
   it('updateStatus 失敗時還原看板卡片位置', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useApplicationStore()
 
@@ -190,7 +185,7 @@ describe('application store', () => {
   })
 
   it('deleteApplication 會從看板移除卡片', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useApplicationStore()
 
@@ -209,7 +204,7 @@ describe('application store', () => {
   })
 
   it('找不到應徵紀錄時 updateStatus 回傳 404 訊息', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useApplicationStore()
 
@@ -220,7 +215,7 @@ describe('application store', () => {
   })
 
   it('沒有 application.create 權限時 createApplication 回傳 403 訊息', async () => {
-    await loginAs('manager', '<redacted>')
+    await loginAs('manager')
 
     const store = useApplicationStore()
 

@@ -1,7 +1,8 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { useAuthStore } from './auth'
+import { loginAs } from '../test/auth'
+
 import { useJobStore } from './job'
 
 import type { CreateJobInput } from '../types/job'
@@ -20,12 +21,6 @@ const newJob: CreateJobInput = {
   status: 'draft',
 }
 
-async function loginAs(username: string, password: string) {
-  const authStore = useAuthStore()
-
-  await authStore.login({ username, password })
-}
-
 describe('job store', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
@@ -41,7 +36,7 @@ describe('job store', () => {
   })
 
   it('fetchJobs 依 query 回傳分頁資料', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useJobStore()
 
@@ -56,7 +51,7 @@ describe('job store', () => {
   })
 
   it('fetchJobs 可依狀態篩選', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useJobStore()
 
@@ -69,7 +64,7 @@ describe('job store', () => {
   })
 
   it('fetchJobById 找不到時 selectedJob 為 null 且不視為錯誤', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useJobStore()
 
@@ -80,7 +75,7 @@ describe('job store', () => {
   })
 
   it('createJob 後可再取得該職缺並刪除', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useJobStore()
 
@@ -103,7 +98,7 @@ describe('job store', () => {
   })
 
   it('沒有 job.create 權限時 createJob 回傳 403 訊息', async () => {
-    await loginAs('manager', '<redacted>')
+    await loginAs('manager')
 
     const store = useJobStore()
 

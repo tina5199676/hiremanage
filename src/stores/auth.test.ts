@@ -2,6 +2,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { TOKEN_STORAGE_KEY } from '../services/http'
+import { loginAs } from '../test/auth'
 import { useAuthStore } from './auth'
 
 describe('auth store', () => {
@@ -12,9 +13,9 @@ describe('auth store', () => {
   it('登入成功後儲存 token 與使用者', async () => {
     const store = useAuthStore()
 
-    const success = await store.login({ username: 'hr', password: '<redacted>' })
+    await loginAs('hr')
 
-    expect(success).toBe(true)
+    expect(store.error).toBeNull()
     expect(store.isAuthenticated).toBe(true)
     expect(store.user?.role).toBe('hr')
     expect(localStorage.getItem(TOKEN_STORAGE_KEY)).toBe('mock-token-2')
@@ -58,7 +59,7 @@ describe('auth store', () => {
   it('登出後清除使用者與 token', async () => {
     const store = useAuthStore()
 
-    await store.login({ username: 'admin', password: '<redacted>' })
+    await loginAs('admin')
     await store.logout()
 
     expect(store.isAuthenticated).toBe(false)

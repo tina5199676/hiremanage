@@ -32,7 +32,7 @@ test.describe('Authentication', () => {
 
   test('沒有權限的頁面會導向 403', async ({ page }) => {
     // Hiring Manager 沒有 audit.read
-    await login(page, 'manager', '<redacted>')
+    await login(page, 'manager')
 
     await page.goto('/admin/audit-logs')
 

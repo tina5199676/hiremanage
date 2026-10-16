@@ -1,7 +1,8 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { useAuthStore } from './auth'
+import { loginAs } from '../test/auth'
+
 import { useCandidateStore } from './candidate'
 
 import type { CreateCandidateInput } from '../types/candidate'
@@ -25,12 +26,6 @@ function buildCandidate(
   }
 }
 
-async function loginAs(username: string, password: string) {
-  const authStore = useAuthStore()
-
-  await authStore.login({ username, password })
-}
-
 describe('candidate store', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
@@ -50,7 +45,7 @@ describe('candidate store', () => {
   })
 
   it('fetchCandidates 依 query 回傳分頁資料', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useCandidateStore()
 
@@ -65,7 +60,7 @@ describe('candidate store', () => {
   })
 
   it('fetchCandidates 可依狀態篩選與關鍵字搜尋', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useCandidateStore()
 
@@ -88,7 +83,7 @@ describe('candidate store', () => {
   })
 
   it('fetchCandidateById 找不到時 selectedCandidate 為 null 且不視為錯誤', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useCandidateStore()
 
@@ -103,7 +98,7 @@ describe('candidate store', () => {
   // --------------------------------------------------
 
   it('createCandidate → updateCandidate → deleteCandidate 完整流程', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useCandidateStore()
 
@@ -137,7 +132,7 @@ describe('candidate store', () => {
   })
 
   it('Email 重複時 createCandidate 回傳 409 訊息', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useCandidateStore()
 
@@ -150,7 +145,7 @@ describe('candidate store', () => {
   })
 
   it('沒有 candidate.create 權限時 createCandidate 回傳 403 訊息', async () => {
-    await loginAs('manager', '<redacted>')
+    await loginAs('manager')
 
     const store = useCandidateStore()
 
@@ -165,7 +160,7 @@ describe('candidate store', () => {
   // --------------------------------------------------
 
   it('fetchNotes 取得候選人備註，addNote 後新備註排在最前面', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useCandidateStore()
 
@@ -191,7 +186,7 @@ describe('candidate store', () => {
   })
 
   it('空白備註回傳 400 訊息', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useCandidateStore()
 
@@ -202,7 +197,7 @@ describe('candidate store', () => {
   })
 
   it('刪除他人建立的備註回傳 403 訊息', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useCandidateStore()
 
@@ -217,7 +212,7 @@ describe('candidate store', () => {
   })
 
   it('沒有 candidate.note 權限時 addNote 回傳 403 訊息', async () => {
-    await loginAs('manager', '<redacted>')
+    await loginAs('manager')
 
     const store = useCandidateStore()
 
@@ -232,7 +227,7 @@ describe('candidate store', () => {
   // --------------------------------------------------
 
   it('fetchHistory 取得候選人的應徵、面試與 Offer 紀錄', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useCandidateStore()
 
@@ -252,7 +247,7 @@ describe('candidate store', () => {
   })
 
   it('fetchHistory 找不到候選人時回傳 404 訊息', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useCandidateStore()
 

@@ -14,6 +14,11 @@ COPY . .
 ARG VITE_ENABLE_MOCK=true
 ENV VITE_ENABLE_MOCK=$VITE_ENABLE_MOCK
 
+# .env 不進版控也不進 image context；
+# 正式部署請以 --build-arg 或 secret 提供 VITE_MOCK_*_PASSWORD，
+# 未提供時使用 .env.example 的範例值（僅適合展示）。
+RUN [ -f .env ] || cp .env.example .env
+
 RUN npm run build
 
 # --------------------------------------------------

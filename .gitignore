@@ -29,3 +29,8 @@ playwright-report
 
 # Coverage
 coverage
+
+# Environment
+.env
+.env.*
+!.env.example

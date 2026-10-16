@@ -24,6 +24,8 @@ jobs:
 
       - run: npm ci
 
+      - run: cp .env.example .env
+
       - run: npm run typecheck
 
       - run: npm run lint
@@ -52,6 +54,8 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      - run: cp .env.example .env
 
       - run: npx playwright install --with-deps chromium
 

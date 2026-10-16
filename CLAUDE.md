@@ -95,6 +95,16 @@ HireManage 是一個企業級智慧面試管理平台練習專案。
 
 禁止加入真實個人資料。
 
+### No Secrets in Source
+
+密碼、金鑰等敏感值一律不寫進程式碼、測試或文件。
+
+* Mock 帳號密碼由 `.env` 的 `VITE_MOCK_*_PASSWORD` 提供，範本是 `.env.example`
+* `.env` 已加入 .gitignore 與 .dockerignore
+* 讀取方式統一經過 `src/config/mock.ts`
+* 單元測試用 `src/test/auth.ts` 的 `loginAs(username)`，E2E 用 `e2e/helpers.ts` 的 `login(page, username)`，兩者都不接受明文密碼
+* 新增需要密碼或金鑰的功能時，先在 `.env.example` 加上範例鍵值
+
 ---
 
 ## 4. Architecture

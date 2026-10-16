@@ -1,15 +1,20 @@
+import { getMockPassword } from '../../src/config/mock'
+
 import type { User } from '../../src/types/auth'
 
 export interface MockUserRecord extends User {
-  /** 僅供 Mock 登入使用的虛構密碼 */
-  password: string
+  /**
+   * 僅供 Mock 登入使用。
+   * 由 .env 的 VITE_MOCK_*_PASSWORD 提供；未設定時為 null，該帳號無法登入。
+   */
+  password: string | null
 }
 
 export const users: MockUserRecord[] = [
   {
     id: 1,
     username: 'admin',
-    password: '<redacted>',
+    password: getMockPassword('admin'),
     name: '王建宏',
     email: 'admin@hiremanage.example',
     role: 'admin',
@@ -20,7 +25,7 @@ export const users: MockUserRecord[] = [
   {
     id: 2,
     username: 'hr',
-    password: '<redacted>',
+    password: getMockPassword('hr'),
     name: '張雅婷',
     email: 'hr@hiremanage.example',
     role: 'hr',
@@ -56,7 +61,7 @@ export const users: MockUserRecord[] = [
   {
     id: 3,
     username: 'manager',
-    password: '<redacted>',
+    password: getMockPassword('manager'),
     name: '李冠廷',
     email: 'manager@hiremanage.example',
     role: 'manager',

@@ -90,7 +90,7 @@ test.describe('Job management flow', () => {
 
   test('Hiring Manager 看不到建立職缺按鈕', async ({ page }) => {
     await logout(page)
-    await login(page, 'manager', '<redacted>')
+    await login(page, 'manager')
 
     await page.goto('/admin/jobs')
 

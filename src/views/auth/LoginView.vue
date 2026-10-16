@@ -4,9 +4,12 @@ import { useRoute, useRouter } from 'vue-router'
 
 import AppAlert from '../../components/AppAlert.vue'
 import FormField from '../../components/FormField.vue'
+import { getMockPassword, isMockEnabled } from '../../config/mock'
 import { useAuthStore } from '../../stores/auth'
+import { ROLE_LABELS } from '../../utils/permissions'
 import { validateLoginForm } from '../../utils/validators'
 
+import type { Role } from '../../types/auth'
 import type { LoginFormErrors } from '../../utils/validators'
 
 const route = useRoute()
@@ -20,11 +23,25 @@ const form = reactive({
 
 const errors = ref<LoginFormErrors>({})
 
-const demoAccounts = [
-  { role: 'System Admin', username: 'admin', password: '<redacted>' },
-  { role: 'HR / Recruiter', username: 'hr', password: '<redacted>' },
-  { role: 'Hiring Manager', username: 'manager', password: '<redacted>' },
+/**
+ * 測試帳號面板只在 Mock 模式顯示，密碼來自 .env（不顯示在畫面上），
+ * 沒有設定密碼的帳號不列出。
+ */
+const DEMO_ROLES: Array<{ role: Role; username: string }> = [
+  { role: 'admin', username: 'admin' },
+  { role: 'hr', username: 'hr' },
+  { role: 'manager', username: 'manager' },
 ]
+
+const demoAccounts = isMockEnabled
+  ? DEMO_ROLES.flatMap(({ role, username }) => {
+      const password = getMockPassword(role)
+
+      return password
+        ? [{ label: ROLE_LABELS[role], username, password }]
+        : []
+    })
+  : []
 
 function fillDemo(username: string, password: string) {
   form.username = username
@@ -138,6 +155,7 @@ async function handleSubmit() {
     </form>
 
     <section
+      v-if="demoAccounts.length > 0"
       class="mt-8 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4"
       aria-labelledby="demo-accounts-title"
     >
@@ -156,11 +174,11 @@ async function handleSubmit() {
         >
           <div>
             <p class="font-medium text-slate-800">
-              {{ account.role }}
+              {{ account.label }}
             </p>
 
             <p class="text-xs text-slate-500">
-              {{ account.username }} / {{ account.password }}
+              帳號 {{ account.username }}
             </p>
           </div>
 

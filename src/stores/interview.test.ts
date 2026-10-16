@@ -1,7 +1,8 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { useAuthStore } from './auth'
+import { loginAs } from '../test/auth'
+
 import { useInterviewStore } from './interview'
 
 import type { CreateInterviewInput } from '../types/interview'
@@ -20,12 +21,6 @@ const newInterview: CreateInterviewInput = {
   status: 'scheduled',
 }
 
-async function loginAs(username: string, password: string) {
-  const authStore = useAuthStore()
-
-  await authStore.login({ username, password })
-}
-
 describe('interview store', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
@@ -41,7 +36,7 @@ describe('interview store', () => {
   })
 
   it('fetchInterviews 可依日期區間取得該月份面試', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useInterviewStore()
 
@@ -57,7 +52,7 @@ describe('interview store', () => {
   })
 
   it('fetchOptions 同時取得應徵紀錄與面試官選項', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useInterviewStore()
 
@@ -73,7 +68,7 @@ describe('interview store', () => {
   })
 
   it('createInterview 後可取得並刪除', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useInterviewStore()
 
@@ -98,7 +93,7 @@ describe('interview store', () => {
   })
 
   it('面試官同時段已有面試時回傳 409 衝突訊息', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useInterviewStore()
 
@@ -114,7 +109,7 @@ describe('interview store', () => {
   })
 
   it('非指派面試官送出回饋時回傳 403 訊息', async () => {
-    await loginAs('manager', '<redacted>')
+    await loginAs('manager')
 
     const store = useInterviewStore()
 
@@ -130,7 +125,7 @@ describe('interview store', () => {
   })
 
   it('指派的面試官送出回饋後面試狀態變為 completed', async () => {
-    await loginAs('manager', '<redacted>')
+    await loginAs('manager')
 
     const store = useInterviewStore()
 
@@ -149,7 +144,7 @@ describe('interview store', () => {
   })
 
   it('沒有 interview.create 權限時 createInterview 回傳 403 訊息', async () => {
-    await loginAs('manager', '<redacted>')
+    await loginAs('manager')
 
     const store = useInterviewStore()
 

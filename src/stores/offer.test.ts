@@ -1,7 +1,8 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { useAuthStore } from './auth'
+import { loginAs } from '../test/auth'
+
 import { useOfferStore } from './offer'
 
 import type { CreateOfferInput } from '../types/offer'
@@ -15,12 +16,6 @@ const newOffer: CreateOfferInput = {
   benefits: ['勞健保', '年終獎金'],
   message: '測試用 Offer',
   status: 'draft',
-}
-
-async function loginAs(username: string, password: string) {
-  const authStore = useAuthStore()
-
-  await authStore.login({ username, password })
 }
 
 describe('offer store', () => {
@@ -38,7 +33,7 @@ describe('offer store', () => {
   })
 
   it('fetchOffers 可依狀態篩選', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useOfferStore()
 
@@ -52,7 +47,7 @@ describe('offer store', () => {
   })
 
   it('fetchApplicationOptions 取得應徵紀錄選項', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useOfferStore()
 
@@ -63,7 +58,7 @@ describe('offer store', () => {
   })
 
   it('createOffer 後依狀態流轉 draft → sent → rejected，最後可刪除', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useOfferStore()
 
@@ -98,7 +93,7 @@ describe('offer store', () => {
   })
 
   it('同一應徵紀錄已有進行中的 Offer 時回傳 409 訊息', async () => {
-    await loginAs('hr', '<redacted>')
+    await loginAs('hr')
 
     const store = useOfferStore()
 
@@ -110,7 +105,7 @@ describe('offer store', () => {
   })
 
   it('沒有 offer.create 權限時 createOffer 回傳 403 訊息', async () => {
-    await loginAs('manager', '<redacted>')
+    await loginAs('manager')
 
     const store = useOfferStore()
 

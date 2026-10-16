@@ -396,18 +396,21 @@ offer.create
 
 ```bash
 npm install
+cp .env.example .env   # 設定 Mock 帳號密碼，.env 不進版控
 npm run dev
 ```
 
 開發模式會自動啟動 MSW，所有 API 皆由 Mock 回應。
 
-Mock 帳號（密碼皆為虛構）：
+Mock 帳號（密碼由 `.env` 的 `VITE_MOCK_*_PASSWORD` 決定，程式碼與文件中不保存密碼）：
 
-| 帳號 | 密碼 | 角色 |
+| 帳號 | 角色 | 密碼環境變數 |
 | --- | --- | --- |
-| admin | <redacted> | System Admin |
-| hr | <redacted> | HR / Recruiter |
-| manager | <redacted> | Hiring Manager |
+| admin | System Admin | `VITE_MOCK_ADMIN_PASSWORD` |
+| hr | HR / Recruiter | `VITE_MOCK_HR_PASSWORD` |
+| manager | Hiring Manager | `VITE_MOCK_MANAGER_PASSWORD` |
+
+登入頁的「測試帳號」面板只在 Mock 模式顯示，且只列出有設定密碼的帳號。
 
 常用指令：
 
