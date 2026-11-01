@@ -14,9 +14,9 @@ HireManage 用於協助企業管理完整招聘流程。
 
 主要使用者包含：
 
-* System Admin
-* HR / Recruiter
-* Hiring Manager
+- System Admin
+- HR / Recruiter
+- Hiring Manager
 
 系統涵蓋：
 
@@ -60,40 +60,40 @@ Mock Data
 
 ### Core
 
-* Vue 3
-* TypeScript
-* Vite
+- Vue 3
+- TypeScript
+- Vite
 
 ### UI
 
-* Tailwind CSS
+- Tailwind CSS
 
 ### State
 
-* Pinia
+- Pinia
 
 ### Routing
 
-* Vue Router
+- Vue Router
 
 ### HTTP
 
-* Axios
+- Axios
 
 ### Mock API
 
-* MSW
+- MSW
 
 ### Testing
 
-* Vitest（Unit Test）
-* Playwright（E2E Test）
+- Vitest（Unit Test）
+- Playwright（E2E Test）
 
 ### Development
 
-* ESLint
-* Docker
-* GitHub Actions
+- ESLint
+- Docker
+- GitHub Actions
 
 ---
 
@@ -142,14 +142,14 @@ Mock Data
 
 已實作：
 
-* Open Jobs
-* Candidates
-* Applications
-* Interviews
-* Offers
-* Application Trend
-* Recruitment Funnel
-* Recent Applications
+- Open Jobs
+- Candidates
+- Applications
+- Interviews
+- Offers
+- Application Trend
+- Recruitment Funnel
+- Recent Applications
 
 ---
 
@@ -157,30 +157,30 @@ Mock Data
 
 已實作：
 
-* Job List
-* Search
-* Filter
-* Sort
-* Pagination
-* Job Detail
-* Create Job
-* Edit Job
-* Delete Job
+- Job List
+- Search
+- Filter
+- Sort
+- Pagination
+- Job Detail
+- Create Job
+- Edit Job
+- Delete Job
 
 Job 包含：
 
-* Title
-* Description
-* Department
-* Location
-* Work Type
-* Salary
-* Experience
-* Education
-* Required Skills
-* Status
-* Created At
-* Updated At
+- Title
+- Description
+- Department
+- Location
+- Work Type
+- Salary
+- Experience
+- Education
+- Required Skills
+- Status
+- Created At
+- Updated At
 
 ---
 
@@ -188,14 +188,14 @@ Job 包含：
 
 已實作：
 
-* Candidate List
-* Candidate Detail
-* Resume
-* Skills
-* Application History
-* Interview History
-* Offer History
-* Notes
+- Candidate List
+- Candidate Detail
+- Resume
+- Skills
+- Application History
+- Interview History
+- Offer History
+- Notes
 
 ---
 
@@ -231,25 +231,25 @@ Drag & Drop 為未來項目。
 
 已實作：
 
-* Interview Calendar
-* Create Interview
-* Edit Interview
-* Delete Interview
-* Interview Feedback
+- Interview Calendar
+- Create Interview
+- Edit Interview
+- Delete Interview
+- Interview Feedback
 
 Interview 資訊包含：
 
-* Candidate
-* Job
-* Interviewer
-* Interview Stage
-* Date
-* Time
-* Mode
-* Meeting Link
-* Location
-* Notes
-* Status
+- Candidate
+- Job
+- Interviewer
+- Interview Stage
+- Date
+- Time
+- Mode
+- Meeting Link
+- Location
+- Notes
+- Status
 
 ---
 
@@ -257,10 +257,10 @@ Interview 資訊包含：
 
 已實作：
 
-* Create Offer
-* Edit Offer
-* Offer Detail
-* Offer Status
+- Create Offer
+- Edit Offer
+- Offer Detail
+- Offer Status
 
 Offer Status：
 
@@ -277,10 +277,10 @@ Rejected
 
 已實作：
 
-* Interview Scheduled
-* Application Updated
-* Offer Accepted
-* System Notification
+- Interview Scheduled
+- Application Updated
+- Offer Accepted
+- System Notification
 
 ---
 
@@ -288,11 +288,11 @@ Rejected
 
 已實作，記錄：
 
-* Actor
-* Action
-* Target
-* Timestamp
-* Details
+- Actor
+- Action
+- Target
+- Timestamp
+- Details
 
 例如：
 
@@ -320,11 +320,11 @@ Admin created User
 
 主要負責：
 
-* Job
-* Candidate
-* Application
-* Interview
-* Offer
+- Job
+- Candidate
+- Application
+- Interview
+- Offer
 
 ---
 
@@ -332,10 +332,10 @@ Admin created User
 
 主要負責：
 
-* Job
-* Candidate
-* Application
-* Interview Feedback
+- Job
+- Candidate
+- Application
+- Interview Feedback
 
 ---
 
@@ -374,21 +374,21 @@ offer.create
 
 本專案希望練習：
 
-* TypeScript
-* Vue 3
-* Component Design
-* State Management
-* Server State
-* API Design
-* Mock API
-* Form Validation
-* Error Handling
-* Unit Testing
-* E2E Testing
-* Accessibility
-* Performance
-* Docker
-* CI/CD
+- TypeScript
+- Vue 3
+- Component Design
+- State Management
+- Server State
+- API Design
+- Mock API
+- Form Validation
+- Error Handling
+- Unit Testing
+- E2E Testing
+- Accessibility
+- Performance
+- Docker
+- CI/CD
 
 ---
 
@@ -404,10 +404,10 @@ npm run dev
 
 Mock 帳號（密碼由 `.env` 的 `VITE_MOCK_*_PASSWORD` 決定，程式碼與文件中不保存密碼）：
 
-| 帳號 | 角色 | 密碼環境變數 |
-| --- | --- | --- |
-| admin | System Admin | `VITE_MOCK_ADMIN_PASSWORD` |
-| hr | HR / Recruiter | `VITE_MOCK_HR_PASSWORD` |
+| 帳號    | 角色           | 密碼環境變數                 |
+| ------- | -------------- | ---------------------------- |
+| admin   | System Admin   | `VITE_MOCK_ADMIN_PASSWORD`   |
+| hr      | HR / Recruiter | `VITE_MOCK_HR_PASSWORD`      |
 | manager | Hiring Manager | `VITE_MOCK_MANAGER_PASSWORD` |
 
 登入頁的「測試帳號」面板只在 Mock 模式顯示，且只列出有設定密碼的帳號。
@@ -482,6 +482,10 @@ Phase 20 ✅ CI/CD
 
 ---
 
-## License
+## 版權聲明
 
-This project is for learning and portfolio purposes.
+此專案僅供個人學習與紀錄使用，無授權任何學習教材用途與商業用途。
+
+## 致謝
+
+感謝所有為這個專案提供建議和協助的人。
